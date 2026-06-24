@@ -504,6 +504,13 @@ const UI_STRINGS = {
     pasteCodePlaceholder: "Paste code here",
     importBtn: "Import",
     undoPartnerDeviceBtn: "This is actually my device — undo",
+    yourData: "Your data & privacy",
+    yourDataHint: "Everything you enter — dates, settings, mood logs — is saved only on this device, in this browser. Nothing is sent to a server and no account is needed. If you clear your browser data, switch phones, or reinstall, that data will be lost unless you back it up below.",
+    exportBackupBtn: "Download backup",
+    importBackupBtn: "Restore from backup",
+    backupExportedMsg: "Backup downloaded ✓",
+    backupRestoredMsg: "Backup restored ✓",
+    backupInvalidMsg: "That file doesn't look like a valid CycleTogether backup.",
     about: "About",
     aboutHint: "This app gives general predictions based on average cycle lengths. Real cycles vary — use it as a gentle guide, not a guarantee.",
     tabToday: "Today",
@@ -594,6 +601,13 @@ const UI_STRINGS = {
     pasteCodePlaceholder: "Вставити код тут",
     importBtn: "Імпортувати",
     undoPartnerDeviceBtn: "Це насправді мій пристрій — скасувати",
+    yourData: "Твої дані та приватність",
+    yourDataHint: "Усе, що ти вводиш — дати, налаштування, записи настрою — зберігається лише на цьому пристрої, у цьому браузері. Нічого не надсилається на сервер, і акаунт не потрібен. Якщо ти очистиш дані браузера, поміняєш телефон або перевстановиш застосунок, ці дані буде втрачено, якщо не зробити резервну копію нижче.",
+    exportBackupBtn: "Завантажити резервну копію",
+    importBackupBtn: "Відновити з резервної копії",
+    backupExportedMsg: "Резервну копію завантажено ✓",
+    backupRestoredMsg: "Резервну копію відновлено ✓",
+    backupInvalidMsg: "Цей файл не схожий на дійсну резервну копію CycleTogether.",
     about: "Про застосунок",
     aboutHint: "Цей застосунок надає загальні прогнози на основі середньої довжини циклу. Реальні цикли відрізняються — використовуй це як м'який орієнтир, а не гарантію.",
     tabToday: "Сьогодні",
@@ -1320,6 +1334,51 @@ document.getElementById("undoPartnerDevice").addEventListener("click", () => {
   state.partnerMode = false;
   saveState();
   renderAll();
+});
+
+// ---------- Full data backup (export/import) ----------
+document.getElementById("exportBackup").addEventListener("click", () => {
+  const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
+  const blob = new Blob([JSON.stringify({ type: "cycletogether-backup", state }, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `cycletogether-backup-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const msg = document.getElementById("backupMsg");
+  msg.textContent = dict.backupExportedMsg;
+  msg.classList.remove("hidden");
+  setTimeout(() => msg.classList.add("hidden"), 2500);
+});
+
+document.getElementById("importBackupFile").addEventListener("change", (e) => {
+  const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
+  const msg = document.getElementById("backupMsg");
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (parsed.type !== "cycletogether-backup" || !parsed.state) throw new Error("invalid");
+      state = parsed.state;
+      saveState();
+      msg.textContent = dict.backupRestoredMsg;
+      msg.classList.remove("hidden");
+      renderAll();
+    } catch (err) {
+      msg.textContent = dict.backupInvalidMsg;
+      msg.classList.remove("hidden");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
 });
 
 // ---------- Partner Sync Premium ----------

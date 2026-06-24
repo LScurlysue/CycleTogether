@@ -186,6 +186,15 @@
         </div>
 
         <div class="card">
+          <h2 data-i18n="yourData">Your data & privacy</h2>
+          <p class="hint" data-i18n="yourDataHint">Everything you enter — dates, settings, mood logs — is saved only on this device, in this browser. Nothing is sent to a server and no account is needed. If you clear your browser data, switch phones, or reinstall, that data will be lost unless you back it up below.</p>
+          <button id="exportBackup" class="secondary-btn" data-i18n="exportBackupBtn">Download backup</button>
+          <label for="importBackupFile" class="secondary-btn file-label" data-i18n="importBackupBtn">Restore from backup</label>
+          <input type="file" id="importBackupFile" accept="application/json" class="hidden" />
+          <p id="backupMsg" class="hint hidden"></p>
+        </div>
+
+        <div class="card">
           <h2 data-i18n="about">About</h2>
           <p class="hint" data-i18n="aboutHint">This app gives general predictions based on average cycle lengths. Real cycles vary — use it as a gentle guide, not a guarantee.</p>
         </div>
