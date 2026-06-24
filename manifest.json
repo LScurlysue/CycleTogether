@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "CycleTogether",
   "short_name": "CycleTogether",
   "description": "Understand the phase of your cycle and what mood to expect.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#fff5f7",
   "theme_color": "#e8607a",
@@ -11,13 +13,25 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
