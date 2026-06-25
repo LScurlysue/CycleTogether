@@ -93,6 +93,12 @@
         </div>
 
         <div class="card hidden" id="dayDetailCard">
+          <!-- Period action buttons at the top, before all other detail -->
+          <div class="period-btn-row owner-only">
+            <button id="dayDetailPeriodBtn" class="secondary-btn period-action-btn"></button>
+            <button id="dayDetailPeriodEndBtn" class="secondary-btn period-action-btn hidden" data-i18n="markAsPeriodEnd">Mark period end</button>
+          </div>
+
           <div class="day-detail-header">
             <div>
               <div class="phase-icon small" id="dayDetailIcon">🌸</div>
@@ -116,8 +122,6 @@
             <p id="dayDetailInsightBe" class="mood-text insight-tab-panel" data-insight-panel="be"></p>
             <p id="dayDetailInsightAdvice" class="mood-text insight-tab-panel" data-insight-panel="advice"></p>
           </div>
-
-          <button id="dayDetailPeriodBtn" class="secondary-btn owner-only"></button>
         </div>
       </section>
 
@@ -145,6 +149,41 @@
 
           <button id="saveSettings" class="primary-btn" data-i18n="saveBtn">Save</button>
           <p id="savedMsg" class="hint hidden" data-i18n="savedMsg">Saved ✓</p>
+        </div>
+
+        <!-- REMINDERS CARD (owner view only) -->
+        <div class="card owner-only" id="remindersCard">
+          <h2 data-i18n="remindersTitle">Reminders</h2>
+          <p class="hint" data-i18n="remindersHint">Get notified when your period, ovulation, or PMS is approaching. Notifications fire when you open the app each day.</p>
+
+          <!-- Shown until permission is granted -->
+          <div id="notifPermSection">
+            <button id="enableRemindersBtn" class="primary-btn" data-i18n="enableRemindersBtn">Enable notifications</button>
+            <p id="notifPermStatus" class="hint"></p>
+          </div>
+
+          <!-- Shown once permission is granted -->
+          <div id="notifToggles" class="hidden">
+            <div class="toggle-row">
+              <label for="notifPeriodReminder" data-i18n="periodReminderLabel">Period reminder</label>
+              <input type="checkbox" id="notifPeriodReminder" class="toggle-checkbox" />
+            </div>
+            <p class="hint toggle-hint" data-i18n="periodReminderHint">3 days and 1 day before your period starts</p>
+
+            <div class="toggle-row">
+              <label for="notifOvulationReminder" data-i18n="ovulationReminderLabel">Ovulation reminder</label>
+              <input type="checkbox" id="notifOvulationReminder" class="toggle-checkbox" />
+            </div>
+            <p class="hint toggle-hint" data-i18n="ovulationReminderHint">1 day before and the day your ovulation window opens</p>
+
+            <div class="toggle-row">
+              <label for="notifPmsHeadsUp" data-i18n="pmsHeadsUpLabel">PMS heads-up</label>
+              <input type="checkbox" id="notifPmsHeadsUp" class="toggle-checkbox" />
+            </div>
+            <p class="hint toggle-hint" data-i18n="pmsHeadsUpHint">2 days and 1 day before PMS begins</p>
+
+            <button id="notifTestBtn" class="secondary-btn" data-i18n="sendTestReminderBtn">Send test notification</button>
+          </div>
         </div>
 
         <div class="card owner-only">
@@ -223,5 +262,6 @@
 
   <script src="dailyInsights.js"></script>
   <script src="script.js"></script>
+  <script src="notifications.js"></script>
 </body>
 </html>

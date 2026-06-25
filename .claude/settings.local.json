@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "WebSearch",
+      "Bash(ls \"../better version cloude/\")",
+      "Bash(npx serve *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001)",
+      "mcp__visualize__show_widget",
+      "Bash(git push *)",
+      "mcp__visualize__read_me",
+      "WebFetch(domain:heyplace.app)",
+      "Bash(gh api *)",
+      "Bash(ls \"C:\\\\Users\\\\lilii\" | head -20)",
+      "Bash(node generate-icons.js)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(ls \"../better version cloude/Icons HeyPlace/\" 2>/dev/null || echo \"empty or not found\")",
+      "Bash(ls \"../better version cloude/icons/\" 2>/dev/null || echo \"empty or not found\")",
+      "Bash(node C:\\\\Users\\\\lilii\\\\AppData\\\\Local\\\\Temp\\\\cv_admin.js)",
+      "Bash(node C:\\\\Users\\\\lilii\\\\AppData\\\\Local\\\\Temp\\\\cv_events.js)",
+      "Read(//c/Users/lilii/Visual Materials/My projects/AI/Gemenai project/better version cloude/**)",
+      "Bash(node --check script.js)"
+    ]
+  }
+}

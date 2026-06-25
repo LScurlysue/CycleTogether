@@ -1,0 +1,223 @@
+{
+  "type": "cycletogether-backup",
+  "state": {
+    "periodHistory": [
+      "2026-06-24"
+    ],
+    "cycleLength": 28,
+    "periodLength": 5,
+    "phaseNotes": {
+      "menstrualEarly": {
+        "icon": "🌧️",
+        "colorClass": "menstrual",
+        "en": {
+          "label": "Period (early)",
+          "text": "Flow and cramps tend to be at their strongest now. Energy is often low — comfort, warmth, and rest help.",
+          "tags": [
+            "Heavy flow",
+            "Cramps",
+            "Low energy",
+            "Rest"
+          ],
+          "support": "It's okay to slow down and do less today. Resting through cramps and fatigue isn't laziness — it's what your body needs right now."
+        },
+        "uk": {
+          "label": "Місячні (початок)",
+          "text": "Виділення і спазми зараз зазвичай найсильніші. Енергії часто мало — допоможуть тепло, комфорт і відпочинок.",
+          "tags": [
+            "Сильні виділення",
+            "Спазми",
+            "Мало енергії",
+            "Відпочинок"
+          ],
+          "support": "Сьогодні можна сповільнитися і робити менше. Відпочивати під час спазмів і втоми — це не лінь, а те, що твоєму тілу справді потрібно зараз."
+        }
+      },
+      "menstrualLate": {
+        "icon": "🌦️",
+        "colorClass": "menstrual",
+        "en": {
+          "label": "Period (tapering off)",
+          "text": "Flow is usually lighter now and energy starts to return. Many feel relief as symptoms ease off.",
+          "tags": [
+            "Lighter flow",
+            "Energy returning",
+            "Relief"
+          ],
+          "support": "If you're still feeling tired or low, that's normal — there's no need to rush back to full speed."
+        },
+        "uk": {
+          "label": "Місячні (закінчуються)",
+          "text": "Виділення зазвичай уже слабшають, і енергія потроху повертається. Багато хто відчуває полегшення, коли симптоми відступають.",
+          "tags": [
+            "Слабші виділення",
+            "Енергія повертається",
+            "Полегшення"
+          ],
+          "support": "Якщо ти ще відчуваєш втому чи млявість — це нормально. Немає потреби одразу повертатися на повну швидкість."
+        }
+      },
+      "follicularEarly": {
+        "icon": "🌱",
+        "colorClass": "follicular",
+        "en": {
+          "label": "Early follicular",
+          "text": "Body and mind are recovering. Energy is gradually building and you may feel calmer or more reflective.",
+          "tags": [
+            "Recovering",
+            "Calm",
+            "Steady"
+          ],
+          "support": "It's fine if your energy isn't back to 100% yet — it tends to build gradually over the next few days."
+        },
+        "uk": {
+          "label": "Рання фолікулярна фаза",
+          "text": "Тіло й розум відновлюються. Енергія поступово зростає, і ти можеш почувати себе спокійніше або більш заглиблено в думки.",
+          "tags": [
+            "Відновлення",
+            "Спокій",
+            "Стабільність"
+          ],
+          "support": "Це нормально, якщо енергії ще не на 100% — вона зазвичай наростає поступово протягом наступних кількох днів."
+        }
+      },
+      "follicularLate": {
+        "icon": "🌼",
+        "colorClass": "follicular",
+        "en": {
+          "label": "Late follicular",
+          "text": "Energy, confidence and mood are climbing toward their peak. Motivation, sociability and drive often increase.",
+          "tags": [
+            "Rising energy",
+            "Motivated",
+            "Social",
+            "Optimistic"
+          ],
+          "support": "Enjoy the extra energy if it shows up — but it's still okay to rest if that's what you need today."
+        },
+        "uk": {
+          "label": "Пізня фолікулярна фаза",
+          "text": "Енергія, впевненість і настрій наближаються до свого піку. Мотивація, бажання спілкуватися й запал часто зростають.",
+          "tags": [
+            "Зростання енергії",
+            "Мотивація",
+            "Спілкування",
+            "Оптимізм"
+          ],
+          "support": "Насолоджуйся додатковою енергією, якщо вона з'явилася — але якщо сьогодні потрібен відпочинок, це теж цілком нормально."
+        }
+      },
+      "ovulation": {
+        "icon": "🌟",
+        "colorClass": "ovulation",
+        "en": {
+          "label": "Ovulation",
+          "text": "Often the highest-energy, most confident phase. Expect more sociability, talkativeness, and laughter than usual.",
+          "tags": [
+            "High energy",
+            "Confident",
+            "Social",
+            "More laughter"
+          ],
+          "support": "Even on a 'high energy' day, it's okay to take things slowly if that's what feels right."
+        },
+        "uk": {
+          "label": "Овуляція",
+          "text": "Часто найенергійніша і найвпевненіша фаза. Очікуй більше бажання спілкуватися, балакучості й сміху, ніж зазвичай.",
+          "tags": [
+            "Багато енергії",
+            "Впевненість",
+            "Спілкування",
+            "Більше сміху"
+          ],
+          "support": "Навіть у день 'високої енергії' цілком нормально не поспішати, якщо так підказує тіло."
+        }
+      },
+      "lutealEarly": {
+        "icon": "🍃",
+        "colorClass": "luteal",
+        "en": {
+          "label": "Early luteal",
+          "text": "Energy is steady but starting to settle. Many feel focused, productive, and good at organizing or wrapping up tasks.",
+          "tags": [
+            "Focused",
+            "Productive",
+            "Steady",
+            "Nesting"
+          ],
+          "support": "If you're craving more quiet time than usual, that's a normal part of this phase — listen to it."
+        },
+        "uk": {
+          "label": "Рання лютеїнова фаза",
+          "text": "Енергія стабільна, але вже потроху вщухає. Багато хто почуває себе зосередженим, продуктивним і добре впорядковує справи.",
+          "tags": [
+            "Зосередженість",
+            "Продуктивність",
+            "Стабільність",
+            "Облаштування"
+          ],
+          "support": "Якщо хочеться більше тиші й спокою, ніж зазвичай — це нормальна частина цієї фази. Послухай себе."
+        }
+      },
+      "lutealLate": {
+        "icon": "🍂",
+        "colorClass": "luteal",
+        "en": {
+          "label": "Late luteal",
+          "text": "Progesterone is starting to ease off and the first subtle shifts can creep in — slightly lower energy, a touch less patience by evening, or a pull toward familiar routines.",
+          "tags": [
+            "Settling",
+            "Lower energy",
+            "Nesting",
+            "Quieter"
+          ],
+          "support": "If you're winding down earlier than usual or craving more quiet time, that's a normal early signal — not a sign anything's wrong."
+        },
+        "uk": {
+          "label": "Пізня лютеїнова фаза",
+          "text": "Прогестерон починає знижуватися, і можуть з'явитися перші ледь помітні зміни — трохи менше енергії, менше терпіння до вечора або тяжіння до звичних речей.",
+          "tags": [
+            "Заспокоєння",
+            "Менше енергії",
+            "Облаштування",
+            "Тихіше"
+          ],
+          "support": "Якщо ти втомлюєшся раніше, ніж звично, або хочеш більше тиші — це нормальний ранній сигнал, а не привід тривожитися."
+        }
+      },
+      "pms": {
+        "icon": "⛈️",
+        "colorClass": "pms",
+        "en": {
+          "label": "PMS (pre-period)",
+          "text": "Mood swings, irritability, sadness, or crying spells are common now. Cravings, bloating, and lower tolerance for stress often increase.",
+          "tags": [
+            "Irritable",
+            "Mood swings",
+            "Crying spells",
+            "Sensitive",
+            "Cravings"
+          ],
+          "support": "If you feel like crying today, that's completely normal. Your hormones are shifting and your feelings are valid — be gentle with yourself, this will pass."
+        },
+        "uk": {
+          "label": "ПМС (перед місячними)",
+          "text": "Зараз часто трапляються перепади настрою, дратівливість, смуток або сльози. Тяга до їжі, набряклість і нижча стійкість до стресу теж зазвичай зростають.",
+          "tags": [
+            "Дратівливість",
+            "Перепади настрою",
+            "Сльози",
+            "Чутливість",
+            "Тяга до їжі"
+          ],
+          "support": "Якщо сьогодні хочеться плакати — це цілком нормально. Твої гормони змінюються, і твої почуття мають значення — будь до себе доброю, це минеться."
+        }
+      }
+    },
+    "moodLog": {},
+    "partnerMode": false,
+    "isPartnerDevice": false,
+    "partnerPremium": false,
+    "lastPartnerAlertDate": null
+  }
+}

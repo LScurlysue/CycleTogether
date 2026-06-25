@@ -9,7 +9,7 @@ function L(obj) {
 
 const DEFAULT_PHASE_NOTES = {
   menstrualEarly: {
-    icon: "🌧️",
+    icon: "🌑",
     colorClass: "menstrual",
     en: {
       label: "Period (early)",
@@ -25,7 +25,7 @@ const DEFAULT_PHASE_NOTES = {
     },
   },
   menstrualLate: {
-    icon: "🌦️",
+    icon: "🌒",
     colorClass: "menstrual",
     en: {
       label: "Period (tapering off)",
@@ -121,7 +121,7 @@ const DEFAULT_PHASE_NOTES = {
     },
   },
   pms: {
-    icon: "⛈️",
+    icon: "🌀",
     colorClass: "pms",
     en: {
       label: "PMS (pre-period)",
@@ -540,6 +540,23 @@ const UI_STRINGS = {
     subscribedNeedsEnable: "Subscribed ✓ — turn on notifications to start receiving daily alerts.",
     partnerAlertPreview: (text) => `Today's alert would say: "${text}"`,
     partnerAlertNoData: "Import a partner code to start getting daily alerts.",
+    // Reminders
+    remindersTitle: "Reminders",
+    remindersHint: "Get notified when your period, ovulation, or PMS is approaching. Notifications fire when you open the app each day.",
+    enableRemindersBtn: "Enable notifications",
+    periodReminderLabel: "Period reminder",
+    periodReminderHint: "3 days and 1 day before your period starts",
+    ovulationReminderLabel: "Ovulation reminder",
+    ovulationReminderHint: "1 day before and the day your ovulation window opens",
+    pmsHeadsUpLabel: "PMS heads-up",
+    pmsHeadsUpHint: "2 days and 1 day before PMS begins",
+    sendTestReminderBtn: "Send test notification",
+    notifDeniedMsg: "Notifications are blocked. Open your browser or system settings to allow them.",
+    notifUnsupportedMsg: "Notifications aren't supported in this browser.",
+    // Period end
+    markAsPeriodEnd: "Mark period end",
+    unmarkAsPeriodEnd: "Unmark period end",
+    periodEndRecorded: "Period end recorded ✓",
   },
   uk: {
     pageTitle: "CycleTogether",
@@ -637,6 +654,23 @@ const UI_STRINGS = {
     subscribedNeedsEnable: "Підписано ✓ — увімкни сповіщення, щоб почати отримувати щоденні сповіщення.",
     partnerAlertPreview: (text) => `Сьогоднішнє сповіщення скаже: "${text}"`,
     partnerAlertNoData: "Імпортуй код партнера, щоб почати отримувати щоденні сповіщення.",
+    // Reminders
+    remindersTitle: "Нагадування",
+    remindersHint: "Отримуй сповіщення, коли наближаються місячні, овуляція або ПМС. Сповіщення з'являються щоразу, коли ти відкриваєш застосунок.",
+    enableRemindersBtn: "Увімкнути сповіщення",
+    periodReminderLabel: "Нагадування про місячні",
+    periodReminderHint: "За 3 дні та за 1 день до початку місячних",
+    ovulationReminderLabel: "Нагадування про овуляцію",
+    ovulationReminderHint: "За 1 день та у день початку вікна овуляції",
+    pmsHeadsUpLabel: "Попередження про ПМС",
+    pmsHeadsUpHint: "За 2 дні та за 1 день до початку ПМС",
+    sendTestReminderBtn: "Надіслати тестове сповіщення",
+    notifDeniedMsg: "Сповіщення заблоковано. Відкрий налаштування браузера або системи, щоб дозволити їх.",
+    notifUnsupportedMsg: "Цей браузер не підтримує сповіщення.",
+    // Period end
+    markAsPeriodEnd: "Позначити кінець місячних",
+    unmarkAsPeriodEnd: "Скасувати позначку кінця місячних",
+    periodEndRecorded: "Кінець місячних записано ✓",
   },
 };
 
@@ -662,6 +696,7 @@ let state = loadState();
 function defaultState() {
   return {
     periodHistory: [],
+    periodEndHistory: {},  // ISO start date → ISO end date
     cycleLength: 28,
     periodLength: 5,
     phaseNotes: JSON.parse(JSON.stringify(DEFAULT_PHASE_NOTES)),
@@ -1164,6 +1199,24 @@ function showDayDetail(date) {
   periodBtn.textContent = isPeriodStart ? dict.unmarkAsPeriodStart : dict.markAsPeriodStart;
   periodBtn.onclick = () => togglePeriodStart(date);
 
+  // Period-end button: only visible once a start is marked for this period segment
+  const periodEndBtn = document.getElementById("dayDetailPeriodEndBtn");
+  if (periodEndBtn) {
+    // Find the most recent period start at or before this date
+    const relevantStart = getMostRecentStart(date);
+    const relevantStartISO = relevantStart ? formatISO(relevantStart) : null;
+    const hasStart = relevantStartISO && state.periodHistory.includes(relevantStartISO);
+    const isEndMarked = relevantStartISO && state.periodEndHistory && state.periodEndHistory[relevantStartISO] === iso;
+
+    if (hasStart) {
+      periodEndBtn.classList.remove("hidden");
+      periodEndBtn.textContent = isEndMarked ? dict.unmarkAsPeriodEnd : dict.markAsPeriodEnd;
+      periodEndBtn.onclick = () => togglePeriodEnd(date, relevantStartISO);
+    } else {
+      periodEndBtn.classList.add("hidden");
+    }
+  }
+
   renderCalendar();
 }
 
@@ -1172,9 +1225,43 @@ function togglePeriodStart(date) {
   const idx = state.periodHistory.indexOf(iso);
   if (idx >= 0) {
     state.periodHistory.splice(idx, 1);
+    // Also remove any end date recorded against this start
+    if (state.periodEndHistory) delete state.periodEndHistory[iso];
   } else {
     state.periodHistory.push(iso);
   }
+  saveState();
+  renderAll();
+  showDayDetail(date);
+}
+
+// Records (or removes) an actual period end date, then recalculates the average
+// period length from all periods that have a confirmed end date.
+function togglePeriodEnd(date, startISO) {
+  if (!state.periodEndHistory) state.periodEndHistory = {};
+  const endISO = formatISO(date);
+
+  if (state.periodEndHistory[startISO] === endISO) {
+    // Unmark
+    delete state.periodEndHistory[startISO];
+  } else {
+    state.periodEndHistory[startISO] = endISO;
+  }
+
+  // Recalculate average period length from all recorded start→end pairs
+  const lengths = Object.entries(state.periodEndHistory)
+    .map(([sISO, eISO]) => {
+      const start = parseISO(sISO);
+      const end   = parseISO(eISO);
+      return diffDays(end, start) + 1; // inclusive: start day counts as day 1
+    })
+    .filter((n) => n >= 1 && n <= 14); // sanity check
+
+  if (lengths.length > 0) {
+    const avg = Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
+    state.periodLength = Math.max(2, Math.min(10, avg));
+  }
+
   saveState();
   renderAll();
   showDayDetail(date);
@@ -1232,6 +1319,9 @@ function renderSettings() {
   }
 
   renderPartnerSync();
+
+  // Notification reminder preferences
+  if (window.NotifManager) window.NotifManager.renderReminders();
 }
 
 document.getElementById("saveSettings").addEventListener("click", () => {
