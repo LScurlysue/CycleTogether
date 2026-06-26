@@ -1,8 +1,8 @@
-// notifications.js — CycleTogether Notification Manager
+// notifications.js — PeakPhase Notification Manager
 // Loaded after script.js and dailyInsights.js; uses their globals directly.
 
-const NOTIF_PREF_KEY   = 'cycletogether_notifPrefs';
-const NOTIF_CHECK_KEY  = 'cycletogether_lastOwnerNotifCheck';
+const NOTIF_PREF_KEY   = 'peakphase_notifPrefs';
+const NOTIF_CHECK_KEY  = 'peakphase_lastOwnerNotifCheck';
 
 window.NotifManager = {
 
@@ -40,7 +40,7 @@ window.NotifManager = {
       const reg = await navigator.serviceWorker.register('./sw.js');
       return reg;
     } catch (e) {
-      console.warn('[CycleTogether] SW registration failed:', e);
+      console.warn('[PeakPhase] SW registration failed:', e);
       return null;
     }
   },
@@ -72,7 +72,7 @@ window.NotifManager = {
     new Notification(title, {
       body,
       icon: './icons/icon-192.png',
-      tag:  options.tag || 'cycletogether',
+      tag:  options.tag || 'peakphase',
     });
   },
 
@@ -115,7 +115,7 @@ window.NotifManager = {
       ? dict.cycleDayTemplate(info.cycleDay, info.cycleLength)
       : `Day ${info.cycleDay} of ${info.cycleLength}`;
 
-    const title = `CycleTogether ${phase.icon}  ${phase.label}`;
+    const title = `PeakPhase ${phase.icon}  ${phase.label}`;
     const body  = `${cycleDayStr}\n\n${howToSupport}`;
 
     await this.show(title, body, {
@@ -157,7 +157,7 @@ window.NotifManager = {
       const daysToP = daysUntilCycleDay(info, 1, true);
       if (daysToP === 3) {
         await this.show(
-          isEN ? 'CycleTogether 🩸  Period in 3 days' : 'CycleTogether 🩸  Місячні через 3 дні',
+          isEN ? 'PeakPhase 🩸  Period in 3 days' : 'PeakPhase 🩸  Місячні через 3 дні',
           isEN
             ? 'Your period is expected in 3 days. A good time to stock up on supplies and plan for some rest.'
             : 'Місячні очікуються через 3 дні. Час поповнити запаси і запланувати відпочинок.',
@@ -165,7 +165,7 @@ window.NotifManager = {
         );
       } else if (daysToP === 1) {
         await this.show(
-          isEN ? 'CycleTogether 🩸  Period tomorrow' : 'CycleTogether 🩸  Місячні завтра',
+          isEN ? 'PeakPhase 🩸  Period tomorrow' : 'PeakPhase 🩸  Місячні завтра',
           isEN
             ? 'Your period starts tomorrow. Prepare your supplies and be gentle with yourself today.'
             : 'Завтра починаються місячні. Підготуй все необхідне і будь лагідна до себе.',
@@ -179,7 +179,7 @@ window.NotifManager = {
       const daysToOv = daysUntilCycleDay(info, info.ovulationStart, false);
       if (daysToOv === 1) {
         await this.show(
-          isEN ? 'CycleTogether 🌟  Ovulation window tomorrow' : 'CycleTogether 🌟  Вікно овуляції завтра',
+          isEN ? 'PeakPhase 🌟  Ovulation window tomorrow' : 'PeakPhase 🌟  Вікно овуляції завтра',
           isEN
             ? 'Your ovulation window opens tomorrow — expect peak energy, confidence, and sociability!'
             : 'Завтра починається вікно овуляції — очікуй пікової енергії, впевненості й товариськості!',
@@ -187,7 +187,7 @@ window.NotifManager = {
         );
       } else if (daysToOv === 0 && info.cycleDay === info.ovulationStart) {
         await this.show(
-          isEN ? 'CycleTogether 🌟  Ovulation window starts today' : 'CycleTogether 🌟  Вікно овуляції починається сьогодні',
+          isEN ? 'PeakPhase 🌟  Ovulation window starts today' : 'PeakPhase 🌟  Вікно овуляції починається сьогодні',
           isEN
             ? "Ovulation window opens today — you're at your peak! High energy, confidence, and magnetism. ✨"
             : 'Вікно овуляції починається сьогодні — ти на піку! Багато енергії, впевненості й магнетизму. ✨',
@@ -201,7 +201,7 @@ window.NotifManager = {
       const daysToPms = daysUntilCycleDay(info, info.pmsStart, false);
       if (daysToPms === 2) {
         await this.show(
-          isEN ? 'CycleTogether 💛  PMS in 2 days' : 'CycleTogether 💛  ПМС через 2 дні',
+          isEN ? 'PeakPhase 💛  PMS in 2 days' : 'PeakPhase 💛  ПМС через 2 дні',
           isEN
             ? 'PMS phase starts in 2 days. Be extra gentle with yourself and plan some downtime this week.'
             : 'Через 2 дні починається фаза ПМС. Будь особливо лагідна до себе і запланируй відпочинок.',
@@ -209,7 +209,7 @@ window.NotifManager = {
         );
       } else if (daysToPms === 1) {
         await this.show(
-          isEN ? 'CycleTogether 💛  PMS phase tomorrow' : 'CycleTogether 💛  ПМС починається завтра',
+          isEN ? 'PeakPhase 💛  PMS phase tomorrow' : 'PeakPhase 💛  ПМС починається завтра',
           isEN
             ? 'PMS phase starts tomorrow. Stock up on comfort food and clear your schedule where you can.'
             : 'Завтра починається фаза ПМС. Підготуй улюблені смаколики і звільни розклад де можеш.',
@@ -317,7 +317,7 @@ window.NotifManager = {
       testBtn.addEventListener('click', async () => {
         const isEN = (typeof LANG === 'undefined') || LANG !== 'uk';
         await this.show(
-          isEN ? 'CycleTogether 🌸  Reminders are on!' : 'CycleTogether 🌸  Нагадування увімкнено!',
+          isEN ? 'PeakPhase 🌸  Reminders are on!' : 'PeakPhase 🌸  Нагадування увімкнено!',
           isEN
             ? "You'll be notified about upcoming period, ovulation, and PMS. You're all set ✓"
             : 'Ти отримуватимеш нагадування про місячні, овуляцію та ПМС. Все налаштовано ✓',
@@ -328,68 +328,75 @@ window.NotifManager = {
   },
 
   /* ─────────────────────────────────────────────
-     Upgrade window.showPartnerNotification so
-     the existing "Send test alert" button also
-     uses SW notifications + action button
+     FCM — Firebase Cloud Messaging
+     Gives partner devices true background push
+     (works even when browser / PWA is closed).
+
+     Flow:
+       1. Load Firebase compat SDK from CDN
+       2. getToken() → FCM registration token
+       3. POST token + cycle data to backend
+       4. Backend cron job sends push daily at 9am
+
+     Only runs on partner devices with partnerPremium
+     enabled, and only if firebase-config.js contains
+     real (non-placeholder) credentials.
   ───────────────────────────────────────────── */
-  _upgradePartnerNotification() {
-    if (typeof window.showPartnerNotification !== 'function') return;
-    const mgr = this;
 
-    window.showPartnerNotification = async function(info) {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
-
-      const lang  = (typeof LANG !== 'undefined') ? LANG : 'en';
-      const isEN  = lang !== 'uk';
-      const phase = getPhaseNote(info.phaseKey);
-      const dict  = (typeof UI_STRINGS !== 'undefined') ? (UI_STRINGS[lang] || UI_STRINGS.en) : {};
-
-      const day          = mapToInsightDay(info);
-      const langInsights = (typeof PARTNER_INSIGHTS !== 'undefined')
-        ? (PARTNER_INSIGHTS[lang] || PARTNER_INSIGHTS.en || {})
-        : {};
-      const dayData      = langInsights[`day_${day}`] || {};
-      const howToSupport = dayData.how_to_be
-        || (typeof PARTNER_ALERTS !== 'undefined' ? (PARTNER_ALERTS[lang] || PARTNER_ALERTS.en || {})[info.phaseKey] : '')
-        || '';
-
-      const cycleDayStr = (typeof dict.cycleDayTemplate === 'function')
-        ? dict.cycleDayTemplate(info.cycleDay, info.cycleLength)
-        : `Day ${info.cycleDay} of ${info.cycleLength}`;
-
-      const title = `CycleTogether ${phase.icon}  ${phase.label}`;
-      const body  = `${cycleDayStr}\n\n${howToSupport}`;
-
-      await mgr.show(title, body, {
-        tag: 'partner-daily',
-        actions: [{
-          action: 'open',
-          title: isEN ? "See today's full insight →" : 'Повний інсайт дня →',
-        }],
-      });
-    };
+  /** True when firebase-config.js has been filled in. */
+  _isFCMReady() {
+    return !!(
+      window.FIREBASE_CONFIG &&
+      window.FIREBASE_CONFIG.apiKey &&
+      window.FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY' &&
+      window.BACKEND_URL &&
+      window.BACKEND_URL !== 'http://localhost:3000'
+    );
   },
 
-  /* ─────────────────────────────────────────────
-     Init — call once after DOM is ready
-  ───────────────────────────────────────────── */
-  async init() {
-    await this.registerSW();
-    this.setupListeners();
-    this.renderReminders();
-    this._upgradePartnerNotification();
-
-    // Defer notification checks so they don't block the initial paint
-    setTimeout(() => {
-      this.checkOwnerReminders();
-      this.checkPartnerDailyNotification();
-    }, 800);
+  /** Dynamically inject a <script> tag and resolve when loaded. */
+  _loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+      const s    = document.createElement('script');
+      s.src      = src;
+      s.onload   = resolve;
+      s.onerror  = () => reject(new Error(`Failed to load ${src}`));
+      document.head.appendChild(s);
+    });
   },
-};
 
-// Auto-init as soon as the DOM (and script.js globals) are ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => window.NotifManager.init());
-} else {
-  window.NotifManager.init();
-}
+  /**
+   * Load the Firebase compat SDK, initialise the app, and return an FCM token.
+   * Returns null if Firebase is not configured or token retrieval fails.
+   */
+  async initFCM() {
+    if (!this._isFCMReady()) return null;
+    if (!('serviceWorker' in navigator)) return null;
+
+    const config = window.FIREBASE_CONFIG;
+    try {
+      // Load Firebase compat SDK from CDN (sequential — messaging depends on app)
+      await this._loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+      await this._loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+
+      // Initialise once
+      if (!window.firebase.apps.length) {
+        window.firebase.initializeApp({
+          apiKey:            config.apiKey,
+          authDomain:        config.authDomain,
+          projectId:         config.projectId,
+          storageBucket:     config.storageBucket,
+          messagingSenderId: config.messagingSenderId,
+          appId:             config.appId,
+        });
+      }
+
+      const messaging = window.firebase.messaging();
+
+      // Request an FCM registration token.
+      // Firebase will automatically use firebase-messaging-sw.js for background delivery.
+      const token = await messaging.getToken({ vapidKey: config.vapidKey });
+      if (!token) throw new Error('getToken returned empty');
+
+      // Refresh token if Fireba

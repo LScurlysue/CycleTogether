@@ -1,5 +1,5 @@
-// sw.js — CycleTogether Service Worker
-const CACHE_NAME = 'cycletogether-v2';
+// sw.js — PeakPhase Service Worker
+const CACHE_NAME = 'peakphase-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const ASSETS = [
   './style.css',
   './dailyInsights.js',
   './notifications.js',
+  './firebase-config.js',
+  './firebase-messaging-sw.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -84,12 +86,9 @@ self.addEventListener('push', (event) => {
   try { data = event.data.json(); } catch { return; }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'CycleTogether', {
+    self.registration.showNotification(data.title || 'PeakPhase', {
       body: data.body || '',
       icon: './icons/icon-192.png',
       badge: './icons/icon-192.png',
-      tag: data.tag || 'cycletogether',
-      actions: data.actions || [],
-    })
-  );
-});
+      tag: data.tag || 'peakphase',
+      act

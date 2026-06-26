@@ -1,5 +1,5 @@
 {
-  "type": "cycletogether-backup",
+  "type": "peakphase-backup",
   "state": {
     "periodHistory": [
       "2026-06-24"
@@ -220,4 +220,4 @@
     "partnerPremium": false,
     "lastPartnerAlertDate": null
   }
-}
+}    

@@ -1,4 +1,5 @@
-const STORAGE_KEY = "cycleSyncData";
+const STORAGE_KEY        = "peakPhaseData";
+const STORAGE_KEY_LEGACY = "cycleSyncData"; // old key — migrated on first load
 const LANG_STORAGE_KEY = "language";
 let LANG = localStorage.getItem(LANG_STORAGE_KEY) || "en";
 
@@ -445,8 +446,8 @@ function getPhaseNote(phaseKey) {
 
 const UI_STRINGS = {
   en: {
-    pageTitle: "CycleTogether",
-    appTitle: "CycleTogether",
+    pageTitle: "PeakPhase",
+    appTitle: "PeakPhase",
     modeTogglePartner: "Partner view",
     modeToggleMy: "My view",
     noDataMessage1: "No cycle data yet. Go to",
@@ -510,7 +511,7 @@ const UI_STRINGS = {
     importBackupBtn: "Restore from backup",
     backupExportedMsg: "Backup downloaded ✓",
     backupRestoredMsg: "Backup restored ✓",
-    backupInvalidMsg: "That file doesn't look like a valid CycleTogether backup.",
+    backupInvalidMsg: "That file doesn't look like a valid PeakPhase backup.",
     about: "About",
     aboutHint: "This app gives general predictions based on average cycle lengths. Real cycles vary — use it as a gentle guide, not a guarantee.",
     tabToday: "Today",
@@ -559,8 +560,8 @@ const UI_STRINGS = {
     periodEndRecorded: "Period end recorded ✓",
   },
   uk: {
-    pageTitle: "CycleTogether",
-    appTitle: "CycleTogether",
+    pageTitle: "PeakPhase",
+    appTitle: "PeakPhase",
     modeTogglePartner: "Вигляд партнера",
     modeToggleMy: "Мій вигляд",
     noDataMessage1: "Поки немає даних про цикл. Перейди в",
@@ -624,7 +625,7 @@ const UI_STRINGS = {
     importBackupBtn: "Відновити з резервної копії",
     backupExportedMsg: "Резервну копію завантажено ✓",
     backupRestoredMsg: "Резервну копію відновлено ✓",
-    backupInvalidMsg: "Цей файл не схожий на дійсну резервну копію CycleTogether.",
+    backupInvalidMsg: "Цей файл не схожий на дійсну резервну копію PeakPhase.",
     about: "Про застосунок",
     aboutHint: "Цей застосунок надає загальні прогнози на основі середньої довжини циклу. Реальні цикли відрізняються — використовуй це як м'який орієнтир, а не гарантію.",
     tabToday: "Сьогодні",
@@ -709,6 +710,13 @@ function defaultState() {
 }
 
 function loadState() {
+  // One-time migration: move data from the old "cycleSyncData" key to "peakPhaseData"
+  try {
+    if (!localStorage.getItem(STORAGE_KEY) && localStorage.getItem(STORAGE_KEY_LEGACY)) {
+      localStorage.setItem(STORAGE_KEY, localStorage.getItem(STORAGE_KEY_LEGACY));
+      localStorage.removeItem(STORAGE_KEY_LEGACY);
+    }
+  } catch {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
@@ -1355,7 +1363,7 @@ function decodeShareCode(code) {
 document.getElementById("generateShareCode").addEventListener("click", () => {
   const sorted = [...state.periodHistory].sort((a, b) => parseISO(b) - parseISO(a));
   const data = {
-    type: "cyclesync-share",
+    type: "peakphase-share",
     cycleLength: state.cycleLength,
     periodLength: state.periodLength,
     lastPeriodDate: sorted[0] || null,
@@ -1386,7 +1394,7 @@ document.getElementById("importCodeBtn").addEventListener("click", () => {
   let data;
   try {
     data = decodeShareCode(input);
-    if (data.type !== "cyclesync-share") throw new Error("invalid");
+    if (data.type !== "peakphase-share") throw new Error("invalid");
   } catch (e) {
     msg.textContent = dict.invalidCodeMsg;
     msg.classList.remove("hidden");
@@ -1429,14 +1437,14 @@ document.getElementById("undoPartnerDevice").addEventListener("click", () => {
 // ---------- Full data backup (export/import) ----------
 document.getElementById("exportBackup").addEventListener("click", () => {
   const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
-  const blob = new Blob([JSON.stringify({ type: "cycletogether-backup", state }, null, 2)], {
+  const blob = new Blob([JSON.stringify({ type: "peakphase-backup", state }, null, 2)], {
     type: "application/json",
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   const dateStr = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `cycletogether-backup-${dateStr}.json`;
+  a.download = `peakphase-backup-${dateStr}.json`;
   a.click();
   URL.revokeObjectURL(url);
 
@@ -1456,7 +1464,7 @@ document.getElementById("importBackupFile").addEventListener("change", (e) => {
   reader.onload = () => {
     try {
       const parsed = JSON.parse(reader.result);
-      if (parsed.type !== "cycletogether-backup" || !parsed.state) throw new Error("invalid");
+      if (parsed.type !== "peakphase-backup" || !parsed.state) throw new Error("invalid");
       state = parsed.state;
       saveState();
       msg.textContent = dict.backupRestoredMsg;
@@ -1539,7 +1547,7 @@ document.getElementById("sendTestAlert").addEventListener("click", () => {
 function showPartnerNotification(info) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   const phase = getPhaseNote(info.phaseKey);
-  new Notification("CycleTogether — Partner Sync", {
+  new Notification("PeakPhase", {
     body: L(PARTNER_ALERTS)[info.phaseKey] || phase.text,
     icon: "icons/icon-192.png",
   });
@@ -1613,20 +1621,4 @@ langToggle.addEventListener("click", () => {
 });
 
 // ---------- Init ----------
-function renderAll() {
-  renderToday();
-  renderSettings();
-  if (document.getElementById("tab-calendar").classList.contains("active")) {
-    renderCalendar();
-  }
-  if (document.getElementById("tab-history").classList.contains("active")) {
-    renderHistory();
-  }
-  applyPartnerMode();
-}
-
-setupMoodButtons();
-applyLangToggleButton();
-applyUIStrings();
-renderAll();
-checkPartnerAlert();
+function renderAll
