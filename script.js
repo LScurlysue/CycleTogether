@@ -427,6 +427,7 @@ const MOOD_LABELS = {
     irritable: "😠 Irritable",
     sad: "😢 Sad / Crying",
     anxious: "😰 Anxious",
+    confident: "💪 Confident",
   },
   uk: {
     happy: "😄 Щасливо",
@@ -436,6 +437,7 @@ const MOOD_LABELS = {
     irritable: "😠 Дратівливо",
     sad: "😢 Сумно / Плач",
     anxious: "😰 Тривожно",
+    confident: "💪 Впевнено",
   },
 };
 
@@ -467,6 +469,7 @@ const UI_STRINGS = {
     moodIrritable: "😠 Irritable",
     moodSad: "😢 Sad / Crying",
     moodAnxious: "😰 Anxious",
+    moodConfident: "💪 Confident",
     loggedForToday: "Logged for today ✓",
     comingUp: "Coming up",
     legendMenstrual: "Menstrual",
@@ -583,6 +586,7 @@ const UI_STRINGS = {
     moodIrritable: "😠 Дратівливо",
     moodSad: "😢 Сумно / Плач",
     moodAnxious: "😰 Тривожно",
+    moodConfident: "💪 Впевнено",
     loggedForToday: "Записано на сьогодні ✓",
     comingUp: "Незабаром",
     legendMenstrual: "Місячні",
@@ -1591,16 +1595,35 @@ function checkPartnerAlert() {
 }
 
 // ---------- Tabs ----------
+function switchTab(tabName) {
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  const panel = document.getElementById(`tab-${tabName}`);
+  if (!btn || !panel) return;
+  document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+  btn.classList.add("active");
+  panel.classList.add("active");
+  if (tabName === "calendar") renderCalendar();
+  if (tabName === "history") renderHistory();
+}
+
 document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-    if (btn.dataset.tab === "calendar") renderCalendar();
-    if (btn.dataset.tab === "history") renderHistory();
-  });
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
+
+// Notification clicks: SW tells us (postMessage) or the URL (?tab=) tells us which tab to open.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "notification-click") {
+      switchTab(event.data.tab || "today");
+    }
+  });
+}
+const urlTab = new URLSearchParams(window.location.search).get("tab");
+if (urlTab) {
+  switchTab(urlTab);
+  history.replaceState(null, "", window.location.pathname);
+}
 
 // ---------- Partner mode ----------
 const modeToggle = document.getElementById("modeToggle");

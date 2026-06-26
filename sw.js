@@ -60,21 +60,23 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ---------- Notification click: open / focus the app ----------
+// ---------- Notification click: open / focus the app, then jump to its tab ----------
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const tab = (event.notification.data && event.notification.data.tab) || 'today';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Focus an existing window if one is open
+        // Focus an existing window if one is open, and tell it which tab to show
         for (const client of clientList) {
           if ('focus' in client) {
+            client.postMessage({ type: 'notification-click', tab });
             return client.focus();
           }
         }
-        // Otherwise open a new tab
-        return self.clients.openWindow('./');
+        // Otherwise open a new tab — pass the target tab via the URL
+        return self.clients.openWindow(`./?tab=${tab}`);
       })
   );
 });

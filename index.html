@@ -63,6 +63,7 @@
               <button class="mood-btn" data-mood="irritable" data-i18n="moodIrritable">😠 Irritable</button>
               <button class="mood-btn" data-mood="sad" data-i18n="moodSad">😢 Sad / Crying</button>
               <button class="mood-btn" data-mood="anxious" data-i18n="moodAnxious">😰 Anxious</button>
+              <button class="mood-btn" data-mood="confident" data-i18n="moodConfident">💪 Confident</button>
             </div>
             <p id="moodLoggedMsg" class="hint hidden" data-i18n="loggedForToday">Logged for today ✓</p>
           </div>
@@ -220,7 +221,7 @@
           <p id="copyMsg" class="hint hidden" data-i18n="copiedMsg">Copied ✓</p>
         </div>
 
-        <div class="card">
+        <div class="card not-owner-only">
           <h2 data-i18n="importPartnerCode">Import partner code</h2>
           <p class="hint" id="importHint"></p>
           <textarea id="importCode" rows="3" placeholder="Paste code here" data-i18n-placeholder="pasteCodePlaceholder"></textarea>

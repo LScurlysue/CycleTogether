@@ -507,6 +507,7 @@ window.NotifManager = {
 
       await mgr.show(title, body, {
         tag: 'partner-daily',
+        data: { tab: 'today' },
         actions: [{
           action: 'open',
           title: isEN ? "See today's full insight →" : 'Повний інсайт дня →',
