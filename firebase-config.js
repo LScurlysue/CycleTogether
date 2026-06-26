@@ -30,7 +30,4 @@ window.FIREBASE_CONFIG = {
 
   // Web Push certificate key pair — from Firebase Console → Cloud Messaging
   // → Web Push certificates → Generate key pair → paste here
-  vapidKey:          "YOUR_VAPID_KEY",
-};
-
-// URL of the PeakPhase backend server (ser
+  vapidKey:          "BAkqLa5MrFtRsFogBDjYeam-_ZMeyBCO3FOzBJNNnpMLGxYka2WGezv4ckQlV6Fr
