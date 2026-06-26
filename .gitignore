@@ -1,0 +1,5 @@
+firebase-config.js
+firebase-messaging-sw.js
+*firebase-adminsdk*.json
+node_modules/
+.env

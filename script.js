@@ -1621,4 +1621,20 @@ langToggle.addEventListener("click", () => {
 });
 
 // ---------- Init ----------
-function renderAll
+function renderAll() {
+  renderToday();
+  renderSettings();
+  if (document.getElementById("tab-calendar").classList.contains("active")) {
+    renderCalendar();
+  }
+  if (document.getElementById("tab-history").classList.contains("active")) {
+    renderHistory();
+  }
+  applyPartnerMode();
+}
+
+setupMoodButtons();
+applyLangToggleButton();
+applyUIStrings();
+renderAll();
+checkPartnerAlert();

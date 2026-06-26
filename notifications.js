@@ -399,4 +399,148 @@ window.NotifManager = {
       const token = await messaging.getToken({ vapidKey: config.vapidKey });
       if (!token) throw new Error('getToken returned empty');
 
-      // Refresh token if Fireba
+      // Refresh token if Firebase rotates it
+      messaging.onTokenRefresh(async () => {
+        const fresh = await messaging.getToken({ vapidKey: config.vapidKey }).catch(() => null);
+        if (fresh) await this.registerWithBackend(fresh);
+      });
+
+      console.log('[PeakPhase] FCM token obtained');
+      return token;
+
+    } catch (err) {
+      console.warn('[PeakPhase] FCM init failed:', err.message);
+      return null;
+    }
+  },
+
+  /**
+   * POST the FCM token + partner cycle data to the backend so it can
+   * send the daily push notification at the scheduled time.
+   */
+  async registerWithBackend(fcmToken) {
+    const backendUrl = window.BACKEND_URL;
+    if (!backendUrl || !fcmToken) return;
+
+    if (typeof state === 'undefined') return;
+
+    const sorted = [...(state.periodHistory || [])].sort((a, b) => (a < b ? 1 : -1));
+    const lang   = (typeof LANG !== 'undefined') ? LANG : 'en';
+
+    const payload = {
+      fcmToken,
+      lastPeriodDate: sorted[0] || null,
+      cycleLength:    state.cycleLength  || 28,
+      periodLength:   state.periodLength || 5,
+      lang,
+    };
+
+    try {
+      const res = await fetch(`${backendUrl}/register-token`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      console.log('[PeakPhase] FCM token registered with backend ✓');
+    } catch (err) {
+      console.warn('[PeakPhase] Backend registration failed:', err.message);
+    }
+  },
+
+  /**
+   * Unregister token from backend (call when user unsubscribes from partner premium).
+   */
+  async unregisterFromBackend(fcmToken) {
+    const backendUrl = window.BACKEND_URL;
+    if (!backendUrl || !fcmToken) return;
+    try {
+      await fetch(`${backendUrl}/unregister-token`, {
+        method:  'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ fcmToken }),
+      });
+    } catch {}
+  },
+
+  /* ─────────────────────────────────────────────
+     Upgrade window.showPartnerNotification so
+     the existing "Send test alert" button also
+     uses SW notifications + action button
+  ───────────────────────────────────────────── */
+  _upgradePartnerNotification() {
+    if (typeof window.showPartnerNotification !== 'function') return;
+    const mgr = this;
+
+    window.showPartnerNotification = async function(info) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+      const lang  = (typeof LANG !== 'undefined') ? LANG : 'en';
+      const isEN  = lang !== 'uk';
+      const phase = getPhaseNote(info.phaseKey);
+      const dict  = (typeof UI_STRINGS !== 'undefined') ? (UI_STRINGS[lang] || UI_STRINGS.en) : {};
+
+      const day          = mapToInsightDay(info);
+      const langInsights = (typeof PARTNER_INSIGHTS !== 'undefined')
+        ? (PARTNER_INSIGHTS[lang] || PARTNER_INSIGHTS.en || {})
+        : {};
+      const dayData      = langInsights[`day_${day}`] || {};
+      const howToSupport = dayData.how_to_be
+        || (typeof PARTNER_ALERTS !== 'undefined' ? (PARTNER_ALERTS[lang] || PARTNER_ALERTS.en || {})[info.phaseKey] : '')
+        || '';
+
+      const cycleDayStr = (typeof dict.cycleDayTemplate === 'function')
+        ? dict.cycleDayTemplate(info.cycleDay, info.cycleLength)
+        : `Day ${info.cycleDay} of ${info.cycleLength}`;
+
+      const title = `PeakPhase ${phase.icon}  ${phase.label}`;
+      const body  = `${cycleDayStr}\n\n${howToSupport}`;
+
+      await mgr.show(title, body, {
+        tag: 'partner-daily',
+        actions: [{
+          action: 'open',
+          title: isEN ? "See today's full insight →" : 'Повний інсайт дня →',
+        }],
+      });
+    };
+  },
+
+  /* ─────────────────────────────────────────────
+     Init — call once after DOM is ready
+  ───────────────────────────────────────────── */
+  async init() {
+    await this.registerSW();
+    this.setupListeners();
+    this.renderReminders();
+    this._upgradePartnerNotification();
+
+    // Defer checks so they don't block the initial paint
+    setTimeout(async () => {
+      this.checkOwnerReminders();
+      this.checkPartnerDailyNotification();
+
+      // FCM: register partner devices for true background push
+      // Only runs when firebase-config.js is filled in and this is a subscribed partner device
+      if (
+        typeof state !== 'undefined' &&
+        state.isPartnerDevice &&
+        state.partnerPremium &&
+        Notification.permission === 'granted' &&
+        this._isFCMReady()
+      ) {
+        const fcmToken = await this.initFCM();
+        if (fcmToken) {
+          await this.registerWithBackend(fcmToken);
+        }
+      }
+    }, 800);
+  },
+};
+
+// Auto-init as soon as the DOM (and script.js globals) are ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => window.NotifManager.init());
+} else {
+  window.NotifManager.init();
+}
