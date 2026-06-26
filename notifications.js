@@ -427,12 +427,21 @@ window.NotifManager = {
     const sorted = [...(state.periodHistory || [])].sort((a, b) => (a < b ? 1 : -1));
     const lang   = (typeof LANG !== 'undefined') ? LANG : 'en';
 
+    // Convert the partner's chosen local time (e.g. "09:00") to a UTC hour,
+    // since the backend cron job runs in UTC and has no notion of the
+    // partner's timezone otherwise.
+    const [localH, localM] = (state.partnerNotifyHour || '09:00').split(':').map(Number);
+    const localTime = new Date();
+    localTime.setHours(localH, localM || 0, 0, 0);
+    const notifyHour = localTime.getUTCHours();
+
     const payload = {
       fcmToken,
       lastPeriodDate: sorted[0] || null,
       cycleLength:    state.cycleLength  || 28,
       periodLength:   state.periodLength || 5,
       lang,
+      notifyHour,
     };
 
     try {
@@ -531,6 +540,8 @@ window.NotifManager = {
       ) {
         const fcmToken = await this.initFCM();
         if (fcmToken) {
+          state.fcmToken = fcmToken;
+          if (typeof saveState === 'function') saveState();
           await this.registerWithBackend(fcmToken);
         }
       }

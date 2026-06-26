@@ -12,7 +12,8 @@
 // ENVIRONMENT VARIABLES (see .env.example)
 //  FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL,
 //  FIREBASE_PRIVATE_KEY_ID, FIREBASE_CLIENT_ID,
-//  CRON_SCHEDULE   — cron expression for the daily job  (default "0 9 * * *" = 9 am UTC)
+//  CRON_SCHEDULE   — cron expression for the hourly check (default "0 * * * *" = every hour;
+//                    each partner's own notifyHour, set in-app, decides which hour they get pinged)
 //  PORT            — HTTP port                          (default 3000)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -126,14 +127,14 @@ function getCycleInfo(tokenData, forDate) {
 // Matches the icons and text used in the frontend (script.js / PARTNER_ALERTS).
 
 const PHASE_META = {
-  menstrualEarly: { icon: '🌑', en: 'Period (early)',        uk: 'Місячні (початок)' },
-  menstrualLate:  { icon: '🌒', en: 'Period (tapering off)', uk: 'Місячні (закінчуються)' },
+  menstrualEarly: { icon: '🩸', en: 'Period (early)',        uk: 'Місячні (початок)' },
+  menstrualLate:  { icon: '🩹', en: 'Period (tapering off)', uk: 'Місячні (закінчуються)' },
   follicularEarly:{ icon: '🌱', en: 'Early follicular',      uk: 'Рання фолікулярна' },
   follicularLate: { icon: '🌼', en: 'Late follicular',       uk: 'Пізня фолікулярна' },
   ovulation:      { icon: '🌟', en: 'Ovulation',             uk: 'Овуляція' },
   lutealEarly:    { icon: '🍃', en: 'Early luteal',          uk: 'Рання лютеїнова' },
   lutealLate:     { icon: '🍂', en: 'Late luteal',           uk: 'Пізня лютеїнова' },
-  pms:            { icon: '🌀', en: 'PMS (pre-period)',      uk: 'ПМС (перед місячними)' },
+  pms:            { icon: '💛', en: 'PMS (pre-period)',      uk: 'ПМС (перед місячними)' },
 };
 
 const PARTNER_MESSAGES = {
@@ -204,25 +205,23 @@ function buildFCMMessage(token, tokenData) {
   };
 }
 
-// ─── Daily cron job ───────────────────────────────────────────────────────────
-// Default: 9:00 am UTC every day. Override with CRON_SCHEDULE env var.
-// Examples:
-//   "0 7 * * *"  = 7am UTC
-//   "0 9 * * *"  = 9am UTC  (default)
-//   "0 18 * * *" = 6pm UTC
-
-const cronSchedule = process.env.CRON_SCHEDULE || '0 9 * * *';
-console.log(`[cron] Daily partner notifications scheduled: "${cronSchedule}"`);
+// ─── Hourly cron job ──────────────────────────────────────────────────────────
+// Runs every hour on the hour and sends to each token whose own `notifyHour`
+// (set by the partner in-app, converted to UTC) matches the current UTC hour.
+// This lets each partner pick their own daily delivery time.
+const cronSchedule = process.env.CRON_SCHEDULE || '0 * * * *';
+console.log(`[cron] Partner notification check scheduled: "${cronSchedule}" (per-token notifyHour)`);
 
 cron.schedule(cronSchedule, async () => {
-  console.log('[cron] Sending daily partner notifications…');
+  const currentHour = new Date().getUTCHours();
   const tokens = loadTokens();
-  const entries = Object.entries(tokens);
+  const entries = Object.entries(tokens).filter(
+    ([, tokenData]) => (Number.isInteger(tokenData.notifyHour) ? tokenData.notifyHour : 9) === currentHour
+  );
 
-  if (!entries.length) {
-    console.log('[cron] No registered tokens — nothing to send.');
-    return;
-  }
+  if (!entries.length) return;
+
+  console.log(`[cron] UTC hour ${currentHour}: sending to ${entries.length} matching token(s)…`);
 
   let sent = 0;
   let failed = 0;
@@ -285,11 +284,13 @@ app.use(cors({
  * }
  */
 app.post('/register-token', (req, res) => {
-  const { fcmToken, lastPeriodDate, cycleLength, periodLength, lang } = req.body;
+  const { fcmToken, lastPeriodDate, cycleLength, periodLength, lang, notifyHour } = req.body;
 
   if (!fcmToken || typeof fcmToken !== 'string') {
     return res.status(400).json({ error: 'fcmToken (string) is required' });
   }
+
+  const hour = Number(notifyHour);
 
   const tokens = loadTokens();
   tokens[fcmToken] = {
@@ -297,6 +298,7 @@ app.post('/register-token', (req, res) => {
     cycleLength:    Number(cycleLength)  || 28,
     periodLength:   Number(periodLength) || 5,
     lang:           lang === 'uk' ? 'uk' : 'en',
+    notifyHour:     Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : 9,
     registeredAt:   new Date().toISOString(),
   };
   saveTokens(tokens);

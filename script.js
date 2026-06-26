@@ -10,7 +10,7 @@ function L(obj) {
 
 const DEFAULT_PHASE_NOTES = {
   menstrualEarly: {
-    icon: "🌑",
+    icon: "🩸",
     colorClass: "menstrual",
     en: {
       label: "Period (early)",
@@ -26,7 +26,7 @@ const DEFAULT_PHASE_NOTES = {
     },
   },
   menstrualLate: {
-    icon: "🌒",
+    icon: "🩹",
     colorClass: "menstrual",
     en: {
       label: "Period (tapering off)",
@@ -122,7 +122,7 @@ const DEFAULT_PHASE_NOTES = {
     },
   },
   pms: {
-    icon: "🌀",
+    icon: "💛",
     colorClass: "pms",
     en: {
       label: "PMS (pre-period)",
@@ -421,6 +421,7 @@ const PARTNER_ALERTS = {
 const MOOD_LABELS = {
   en: {
     happy: "😄 Happy",
+    energetic: "🔥 Energetic / Driven",
     calm: "😌 Calm",
     tired: "😴 Tired",
     irritable: "😠 Irritable",
@@ -429,6 +430,7 @@ const MOOD_LABELS = {
   },
   uk: {
     happy: "😄 Щасливо",
+    energetic: "🔥 Енергійно / З бажанням діяти",
     calm: "😌 Спокійно",
     tired: "😴 Втомлено",
     irritable: "😠 Дратівливо",
@@ -459,6 +461,7 @@ const UI_STRINGS = {
     howAreYouFeeling: "How are you feeling?",
     moodHint: "Log how you're feeling today — pick as many as fit. You can review this later in History.",
     moodHappy: "😄 Happy",
+    moodEnergetic: "🔥 Energetic / Driven",
     moodCalm: "😌 Calm",
     moodTired: "😴 Tired",
     moodIrritable: "😠 Irritable",
@@ -491,10 +494,11 @@ const UI_STRINGS = {
     settingsManagedMsg: "Settings are managed by the person tracking their cycle. Switch to \"My view\" to edit.",
     partnerSync: "Partner Sync",
     premiumBadge: "Premium",
-    partnerSyncHint: "Get a daily heads-up alert about her cycle phase — what to expect and how to be supportive. $3/month.",
-    subscribeBtn: "Subscribe ($3/month)",
-    unsubscribeBtn: "Unsubscribe",
+    partnerSyncHint: "Get a daily heads-up alert about her cycle phase — what to expect and how to be supportive.",
+    subscribeBtn: "Enable Partner Sync",
+    unsubscribeBtn: "Disable Partner Sync",
     enableNotificationsBtn: "Enable notifications",
+    partnerNotifyTimeLabel: "Daily reminder time",
     sendTestAlertBtn: "Send test alert",
     shareWithPartner: "Share with partner",
     shareWithPartnerHint: "Generate a code with your cycle settings (no mood logs or history) for your partner to enter on their own phone. Their app will then show predictions independently — no need to hand over your phone.",
@@ -573,6 +577,7 @@ const UI_STRINGS = {
     howAreYouFeeling: "Як ти почуваєшся?",
     moodHint: "Запиши, як ти почуваєшся сьогодні — обери стільки варіантів, скільки підходить. Переглянути це можна пізніше в Історії.",
     moodHappy: "😄 Щасливо",
+    moodEnergetic: "🔥 Енергійно / З бажанням діяти",
     moodCalm: "😌 Спокійно",
     moodTired: "😴 Втомлено",
     moodIrritable: "😠 Дратівливо",
@@ -605,10 +610,11 @@ const UI_STRINGS = {
     settingsManagedMsg: "Налаштування керує людина, яка відстежує свій цикл. Переключися на \"Мій вигляд\", щоб редагувати.",
     partnerSync: "Синхронізація з партнером",
     premiumBadge: "Преміум",
-    partnerSyncHint: "Отримуй щоденне сповіщення про її фазу циклу — чого очікувати і як підтримати. $3/місяць.",
-    subscribeBtn: "Підписатися ($3/місяць)",
-    unsubscribeBtn: "Скасувати підписку",
+    partnerSyncHint: "Отримуй щоденне сповіщення про її фазу циклу — чого очікувати і як підтримати.",
+    subscribeBtn: "Увімкнути синхронізацію",
+    unsubscribeBtn: "Вимкнути синхронізацію",
     enableNotificationsBtn: "Увімкнути сповіщення",
+    partnerNotifyTimeLabel: "Час щоденного нагадування",
     sendTestAlertBtn: "Надіслати тестове сповіщення",
     shareWithPartner: "Поділитися з партнером",
     shareWithPartnerHint: "Створи код із налаштуваннями свого циклу (без записів настрою чи історії), щоб партнер ввів його на своєму телефоні. Його застосунок показуватиме прогнози самостійно — не потрібно передавати телефон.",
@@ -706,6 +712,8 @@ function defaultState() {
     isPartnerDevice: false,
     partnerPremium: false,
     lastPartnerAlertDate: null,
+    partnerNotifyHour: "09:00",
+    fcmToken: null,
   };
 }
 
@@ -1486,6 +1494,9 @@ function renderPartnerSync() {
   const testBtn = document.getElementById("sendTestAlert");
   const status = document.getElementById("premiumStatus");
   const preview = document.getElementById("partnerAlertPreview");
+  const notifyTimeRow = document.getElementById("partnerNotifyTimeRow");
+  const notifyTimeInput = document.getElementById("partnerNotifyTime");
+  notifyTimeInput.value = state.partnerNotifyHour || "09:00";
 
   const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
   const today = toDateOnly(new Date());
@@ -1499,6 +1510,7 @@ function renderPartnerSync() {
     toggleBtn.classList.remove("primary-btn");
     toggleBtn.classList.add("secondary-btn");
     enableBtn.classList.remove("hidden");
+    notifyTimeRow.classList.remove("hidden");
     testBtn.classList.remove("hidden");
 
     if (!("Notification" in window)) {
@@ -1517,10 +1529,19 @@ function renderPartnerSync() {
     toggleBtn.classList.remove("secondary-btn");
     toggleBtn.classList.add("primary-btn");
     enableBtn.classList.add("hidden");
+    notifyTimeRow.classList.add("hidden");
     testBtn.classList.add("hidden");
     status.textContent = "";
   }
 }
+
+document.getElementById("partnerNotifyTime").addEventListener("change", (e) => {
+  state.partnerNotifyHour = e.target.value || "09:00";
+  saveState();
+  if (state.fcmToken && window.NotifManager) {
+    window.NotifManager.registerWithBackend(state.fcmToken);
+  }
+});
 
 document.getElementById("togglePartnerPremium").addEventListener("click", () => {
   state.partnerPremium = !state.partnerPremium;

@@ -57,6 +57,7 @@
             <p class="hint" data-i18n="moodHint">Log how you're feeling today — pick as many as fit. You can review this later in History.</p>
             <div class="mood-buttons">
               <button class="mood-btn" data-mood="happy" data-i18n="moodHappy">😄 Happy</button>
+              <button class="mood-btn" data-mood="energetic" data-i18n="moodEnergetic">🔥 Energetic / Driven</button>
               <button class="mood-btn" data-mood="calm" data-i18n="moodCalm">😌 Calm</button>
               <button class="mood-btn" data-mood="tired" data-i18n="moodTired">😴 Tired</button>
               <button class="mood-btn" data-mood="irritable" data-i18n="moodIrritable">😠 Irritable</button>
@@ -197,11 +198,15 @@
         </div>
 
         <div class="card not-owner-only premium-card">
-          <h2 data-i18n="partnerSync">Partner Sync <span class="premium-badge" data-i18n="premiumBadge">Premium</span></h2>
-          <p class="hint" data-i18n="partnerSyncHint">Get a daily heads-up alert about her cycle phase — what to expect and how to be supportive. $3/month.</p>
+          <h2 data-i18n="partnerSync">Partner Sync</h2>
+          <p class="hint" data-i18n="partnerSyncHint">Get a daily heads-up alert about her cycle phase — what to expect and how to be supportive.</p>
           <p class="mood-text" id="partnerAlertPreview"></p>
-          <button id="togglePartnerPremium" class="primary-btn" data-i18n="subscribeBtn">Subscribe ($3/month)</button>
+          <button id="togglePartnerPremium" class="primary-btn" data-i18n="subscribeBtn">Enable Partner Sync</button>
           <button id="enableNotifications" class="secondary-btn hidden" data-i18n="enableNotificationsBtn">Enable notifications</button>
+          <div class="toggle-row hidden" id="partnerNotifyTimeRow">
+            <label for="partnerNotifyTime" data-i18n="partnerNotifyTimeLabel">Daily reminder time</label>
+            <input type="time" id="partnerNotifyTime" value="09:00" />
+          </div>
           <button id="sendTestAlert" class="secondary-btn hidden" data-i18n="sendTestAlertBtn">Send test alert</button>
           <p id="premiumStatus" class="hint"></p>
         </div>
