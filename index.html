@@ -52,20 +52,25 @@
             <p id="supportText" class="mood-text affirmation insight-tab-panel owner-only" data-insight-panel="support"></p>
           </div>
 
-          <div class="card owner-only">
-            <h2 data-i18n="howAreYouFeeling">How are you feeling?</h2>
-            <p class="hint" data-i18n="moodHint">Log how you're feeling today — pick as many as fit. You can review this later in History.</p>
-            <div class="mood-buttons">
-              <button class="mood-btn" data-mood="happy" data-i18n="moodHappy">😄 Happy</button>
-              <button class="mood-btn" data-mood="energetic" data-i18n="moodEnergetic">🔥 Energetic / Driven</button>
-              <button class="mood-btn" data-mood="calm" data-i18n="moodCalm">😌 Calm</button>
-              <button class="mood-btn" data-mood="tired" data-i18n="moodTired">😴 Tired</button>
-              <button class="mood-btn" data-mood="irritable" data-i18n="moodIrritable">😠 Irritable</button>
-              <button class="mood-btn" data-mood="sad" data-i18n="moodSad">😢 Sad / Crying</button>
-              <button class="mood-btn" data-mood="anxious" data-i18n="moodAnxious">😰 Anxious</button>
-              <button class="mood-btn" data-mood="confident" data-i18n="moodConfident">💪 Confident</button>
+          <div class="card owner-only collapsible-card" id="moodCard">
+            <button type="button" class="collapsible-header" id="moodCardToggle" aria-expanded="true" aria-controls="moodCardBody">
+              <h2 data-i18n="howAreYouFeeling">How are you feeling?</h2>
+              <span class="collapse-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div class="collapsible-body" id="moodCardBody">
+              <p class="hint" data-i18n="moodHint">Log how you're feeling today — pick as many as fit. You can review this later in History.</p>
+              <div class="mood-buttons">
+                <button class="mood-btn" data-mood="happy" data-i18n="moodHappy">😄 Happy</button>
+                <button class="mood-btn" data-mood="energetic" data-i18n="moodEnergetic">🔥 Energetic / Driven</button>
+                <button class="mood-btn" data-mood="calm" data-i18n="moodCalm">😌 Calm</button>
+                <button class="mood-btn" data-mood="tired" data-i18n="moodTired">😴 Tired</button>
+                <button class="mood-btn" data-mood="irritable" data-i18n="moodIrritable">😠 Irritable</button>
+                <button class="mood-btn" data-mood="sad" data-i18n="moodSad">😢 Sad / Crying</button>
+                <button class="mood-btn" data-mood="anxious" data-i18n="moodAnxious">😰 Anxious</button>
+                <button class="mood-btn" data-mood="confident" data-i18n="moodConfident">💪 Confident</button>
+              </div>
+              <p id="moodLoggedMsg" class="hint hidden" data-i18n="loggedForToday">Logged for today ✓</p>
             </div>
-            <p id="moodLoggedMsg" class="hint hidden" data-i18n="loggedForToday">Logged for today ✓</p>
           </div>
 
           <div class="card owner-only">
@@ -100,6 +105,8 @@
             <button id="dayDetailPeriodBtn" class="secondary-btn period-action-btn"></button>
             <button id="dayDetailPeriodEndBtn" class="secondary-btn period-action-btn hidden" data-i18n="markAsPeriodEnd">Mark period end</button>
           </div>
+
+          <p id="periodTimingMsg" class="period-timing-msg owner-only hidden"></p>
 
           <div class="day-detail-header">
             <div>

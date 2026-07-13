@@ -669,6 +669,58 @@ body:not(.partner-mode) .not-owner-only {
   margin: 2px 0 8px;
 }
 
+/* ── Collapsible card header (e.g. "How are you feeling?") ── */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.collapsible-header h2 {
+  margin: 0;
+}
+
+.collapse-chevron {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.collapsible-card.collapsed .collapse-chevron {
+  transform: rotate(-90deg);
+}
+
+.collapsible-card .collapsible-body {
+  margin-top: 10px;
+}
+
+.collapsible-card.collapsed .collapsible-body {
+  display: none;
+}
+
+/* ── "Period started earlier/later than expected" note ── */
+.period-timing-msg {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+
 /* ── Period action buttons row (top of day detail card) ── */
 .period-btn-row {
   display: flex;

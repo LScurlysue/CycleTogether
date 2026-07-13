@@ -471,6 +471,9 @@ const UI_STRINGS = {
     moodAnxious: "😰 Anxious",
     moodConfident: "💪 Confident",
     loggedForToday: "Logged for today ✓",
+    periodTimingEarlier: (n) => `Looks like your period came ${n} ${n === 1 ? "day" : "days"} earlier than expected 🌸 That's completely normal — your predictions are updated.`,
+    periodTimingLater: (n) => `Looks like your period came ${n} ${n === 1 ? "day" : "days"} later than expected 🌸 Nothing to worry about — your predictions are updated.`,
+    periodTimingOnTime: "Right on schedule 🌸 Your predictions are updated.",
     comingUp: "Coming up",
     legendMenstrual: "Menstrual",
     legendFollicular: "Follicular",
@@ -588,6 +591,9 @@ const UI_STRINGS = {
     moodAnxious: "😰 Тривожно",
     moodConfident: "💪 Впевнено",
     loggedForToday: "Записано на сьогодні ✓",
+    periodTimingEarlier: (n) => `Схоже, місячні почалися на ${n} дн. раніше, ніж очікувалося 🌸 Це цілком нормально — прогнози оновлено.`,
+    periodTimingLater: (n) => `Схоже, місячні почалися на ${n} дн. пізніше, ніж очікувалося 🌸 Немає причин хвилюватися — прогнози оновлено.`,
+    periodTimingOnTime: "Точно за графіком 🌸 Прогнози оновлено.",
     comingUp: "Незабаром",
     legendMenstrual: "Місячні",
     legendFollicular: "Фолікулярна",
@@ -713,6 +719,7 @@ function defaultState() {
     phaseNotes: JSON.parse(JSON.stringify(DEFAULT_PHASE_NOTES)),
     moodLog: {},
     partnerMode: false,
+    moodCardCollapsed: false,
     isPartnerDevice: false,
     partnerPremium: false,
     lastPartnerAlertDate: null,
@@ -1237,8 +1244,25 @@ function showDayDetail(date) {
     }
   }
 
+  // Early/late acknowledgment note — only for the date just marked, while it's
+  // still a recorded start.
+  const timingMsgEl = document.getElementById("periodTimingMsg");
+  if (timingMsgEl) {
+    if (periodTimingNote && periodTimingNote.iso === iso && isPeriodStart) {
+      timingMsgEl.textContent = periodTimingMessage(periodTimingNote.delta);
+      timingMsgEl.classList.remove("hidden");
+    } else {
+      timingMsgEl.classList.add("hidden");
+    }
+  }
+
   renderCalendar();
 }
+
+// Holds a one-off "your period came earlier/later than expected" note to show on
+// the day detail card for the date the user just marked. { iso, delta } where
+// delta is (actual − predicted) days: negative = earlier, positive = later.
+let periodTimingNote = null;
 
 function togglePeriodStart(date) {
   const iso = formatISO(date);
@@ -1247,12 +1271,35 @@ function togglePeriodStart(date) {
     state.periodHistory.splice(idx, 1);
     // Also remove any end date recorded against this start
     if (state.periodEndHistory) delete state.periodEndHistory[iso];
+    if (periodTimingNote && periodTimingNote.iso === iso) periodTimingNote = null;
   } else {
+    // Compare the newly-marked start against what the app predicted, so we can
+    // gently acknowledge an early/late start. The new date isn't in the history
+    // yet, so getMostRecentStart returns the previous start we predicted from.
+    periodTimingNote = null;
+    const prevStart = getMostRecentStart(date);
+    if (prevStart && diffDays(date, prevStart) > 0) {
+      const cycleLen = Number(state.cycleLength) || 28;
+      const predicted = addDays(prevStart, cycleLen);
+      const delta = diffDays(date, predicted); // <0 earlier, >0 later, 0 on time
+      // Only note plausible single-cycle deltas; skip when a cycle was clearly
+      // missed (huge gap) so we don't show a misleading "60 days late".
+      if (Math.abs(delta) <= 14) periodTimingNote = { iso, delta };
+    }
     state.periodHistory.push(iso);
   }
   saveState();
   renderAll();
   showDayDetail(date);
+}
+
+// Localized message for the early/late period note, based on the day delta.
+function periodTimingMessage(delta) {
+  const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
+  if (delta === 0) return dict.periodTimingOnTime;
+  return delta < 0
+    ? dict.periodTimingEarlier(Math.abs(delta))
+    : dict.periodTimingLater(delta);
 }
 
 // Records (or removes) an actual period end date, then recalculates the average
@@ -1677,7 +1724,29 @@ function renderAll() {
   applyPartnerMode();
 }
 
+// Collapsible "How are you feeling?" card — remembers open/closed between visits.
+function setupCollapsibleMoodCard() {
+  const card = document.getElementById("moodCard");
+  const toggle = document.getElementById("moodCardToggle");
+  if (!card || !toggle) return;
+
+  const apply = (collapsed) => {
+    card.classList.toggle("collapsed", collapsed);
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+  };
+
+  apply(!!state.moodCardCollapsed);
+
+  toggle.addEventListener("click", () => {
+    const collapsed = !card.classList.contains("collapsed");
+    apply(collapsed);
+    state.moodCardCollapsed = collapsed;
+    saveState();
+  });
+}
+
 setupMoodButtons();
+setupCollapsibleMoodCard();
 applyLangToggleButton();
 applyUIStrings();
 renderAll();
