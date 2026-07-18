@@ -802,13 +802,38 @@ function getMostRecentStart(forDate) {
   return best;
 }
 
+// Earliest logged period start that comes strictly after the given date, or null.
+function getNextStartAfter(anchorDate) {
+  const later = state.periodHistory
+    .map(parseISO)
+    .filter((d) => diffDays(d, anchorDate) > 0)
+    .sort((a, b) => a - b);
+  return later[0] || null;
+}
+
 function getCycleInfo(forDate) {
   const lastStart = getMostRecentStart(forDate);
   if (!lastStart) return null;
   const cycleLength = Number(state.cycleLength) || 28;
   const periodLength = Number(state.periodLength) || 5;
-  let diff = diffDays(forDate, lastStart);
-  let cycleDay = ((diff % cycleLength) + cycleLength) % cycleLength + 1;
+  const diff = diffDays(forDate, lastStart);
+
+  // If another period start is already logged after this anchor, we're sitting
+  // between two real periods — count the days straight through instead of
+  // wrapping into a phantom predicted period. Only wrap to predict future
+  // cycles when there's no later start logged yet.
+  const nextStart = getNextStartAfter(lastStart);
+  let cycleDay = nextStart
+    ? diff + 1
+    : ((diff % cycleLength) + cycleLength) % cycleLength + 1;
+
+  // Honor a logged period-end date: this period stays red only through that
+  // day, even if it was shorter (or longer) than the average period length.
+  const anchorISO = formatISO(lastStart);
+  const endISO = state.periodEndHistory && state.periodEndHistory[anchorISO];
+  const effPeriodLength = endISO
+    ? Math.max(1, diffDays(parseISO(endISO), lastStart) + 1)
+    : periodLength;
 
   // How many full cycles have passed since the earliest logged period —
   // used to rotate daily-insight wording so it varies month to month.
@@ -821,13 +846,13 @@ function getCycleInfo(forDate) {
   const pmsStart = cycleLength - 4;
 
   let phaseKey;
-  if (cycleDay <= periodLength) {
-    const menstrualMid = Math.max(1, Math.floor(periodLength / 2));
+  if (cycleDay <= effPeriodLength) {
+    const menstrualMid = Math.max(1, Math.floor(effPeriodLength / 2));
     phaseKey = cycleDay <= menstrualMid ? "menstrualEarly" : "menstrualLate";
   } else if (cycleDay >= ovulationStart && cycleDay <= ovulationEnd) {
     phaseKey = "ovulation";
   } else if (cycleDay < ovulationStart) {
-    const follicularMid = Math.floor((periodLength + 1 + (ovulationStart - 1)) / 2);
+    const follicularMid = Math.floor((effPeriodLength + 1 + (ovulationStart - 1)) / 2);
     phaseKey = cycleDay <= follicularMid ? "follicularEarly" : "follicularLate";
   } else if (cycleDay >= pmsStart) {
     phaseKey = "pms";
@@ -839,7 +864,7 @@ function getCycleInfo(forDate) {
   return {
     cycleDay,
     cycleLength,
-    periodLength,
+    periodLength: effPeriodLength,
     ovulationDay,
     ovulationStart,
     ovulationEnd,
