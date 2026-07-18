@@ -797,9 +797,10 @@ function addDays(date, n) {
 function getMostRecentStart(forDate) {
   if (!state.periodHistory.length) return null;
   const sorted = [...state.periodHistory].map(parseISO).sort((a, b) => b - a);
-  let best = sorted.find((d) => d <= forDate);
-  if (!best) best = sorted[sorted.length - 1];
-  return best;
+  // Only anchor to a start on or before this date. Days before the earliest
+  // logged period have no cycle data, so we don't back-project phases onto
+  // months the user never tracked.
+  return sorted.find((d) => d <= forDate) || null;
 }
 
 // Earliest logged period start that comes strictly after the given date, or null.
