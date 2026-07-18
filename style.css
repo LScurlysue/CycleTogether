@@ -494,6 +494,42 @@ textarea {
   margin: 0;
 }
 
+.calendar-title-btn {
+  margin: 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-dark);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-title-btn::after {
+  content: "▾";
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.calendar-title-btn:hover {
+  background: var(--accent-lighter);
+}
+
+/* Visually hidden but focusable, so the native month picker can anchor to it. */
+.month-picker-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

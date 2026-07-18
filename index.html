@@ -84,10 +84,11 @@
       <section id="tab-calendar" class="tab-panel">
         <div class="card">
           <div class="calendar-nav">
-            <button id="prevMonth">‹</button>
-            <h2 id="calendarTitle">Month</h2>
-            <button id="nextMonth">›</button>
+            <button id="prevMonth" aria-label="Previous month">‹</button>
+            <button id="calendarTitle" class="calendar-title-btn" type="button" title="Tap to jump to a month">Month</button>
+            <button id="nextMonth" aria-label="Next month">›</button>
           </div>
+          <input type="month" id="monthPicker" class="month-picker-input" aria-label="Jump to month" />
           <div class="calendar-grid" id="calendarGrid"></div>
           <div class="legend">
             <span><i class="dot menstrual"></i> <span data-i18n="legendMenstrual">Menstrual</span></span>

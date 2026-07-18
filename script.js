@@ -803,6 +803,55 @@ function getMostRecentStart(forDate) {
   return sorted.find((d) => d <= forDate) || null;
 }
 
+// Two period starts closer together than this can't be separate cycles — the
+// shortest realistic cycle is ~21 days — so we treat them as the same period.
+const SAME_PERIOD_DAYS = 15;
+
+// Most recent logged start strictly before the given date, or null.
+function getPreviousStartBefore(forDate) {
+  return state.periodHistory
+    .map(parseISO)
+    .filter((d) => diffDays(forDate, d) > 0)
+    .sort((a, b) => b - a)[0] || null;
+}
+
+// Remove any starts within the same-period window of keepISO (except keepISO
+// itself), plus any now-orphaned period-end records. Used when the user marks a
+// start, so a stray nearby start doesn't create a second "day 1".
+function pruneNearbyStarts(keepISO) {
+  const keep = parseISO(keepISO);
+  state.periodHistory = state.periodHistory.filter(
+    (iso) => iso === keepISO || Math.abs(diffDays(parseISO(iso), keep)) >= SAME_PERIOD_DAYS
+  );
+  dropOrphanEndDates();
+}
+
+// One-time cleanup of legacy data: collapse clusters of starts that fall within
+// the same-period window, keeping the earliest (the true first day). Returns
+// true if anything changed.
+function normalizePeriodHistory() {
+  if (!state.periodHistory || state.periodHistory.length < 2) return false;
+  const sorted = [...new Set(state.periodHistory)].sort((a, b) => parseISO(a) - parseISO(b));
+  const kept = [];
+  for (const iso of sorted) {
+    const last = kept[kept.length - 1];
+    if (last && Math.abs(diffDays(parseISO(iso), parseISO(last))) < SAME_PERIOD_DAYS) continue;
+    kept.push(iso);
+  }
+  if (kept.length === state.periodHistory.length) return false;
+  state.periodHistory = kept;
+  dropOrphanEndDates();
+  return true;
+}
+
+// Drop period-end records whose start is no longer in the history.
+function dropOrphanEndDates() {
+  if (!state.periodEndHistory) return;
+  Object.keys(state.periodEndHistory).forEach((sISO) => {
+    if (!state.periodHistory.includes(sISO)) delete state.periodEndHistory[sISO];
+  });
+}
+
 // Earliest logged period start that comes strictly after the given date, or null.
 function getNextStartAfter(anchorDate) {
   const later = state.periodHistory
@@ -1299,11 +1348,14 @@ function togglePeriodStart(date) {
     if (state.periodEndHistory) delete state.periodEndHistory[iso];
     if (periodTimingNote && periodTimingNote.iso === iso) periodTimingNote = null;
   } else {
-    // Compare the newly-marked start against what the app predicted, so we can
-    // gently acknowledge an early/late start. The new date isn't in the history
-    // yet, so getMostRecentStart returns the previous start we predicted from.
+    state.periodHistory.push(iso);
+    // A start a few days from an existing one is the same period, not a new
+    // cycle — drop the nearby one so the day count doesn't reset twice.
+    pruneNearbyStarts(iso);
+    // Compare the newly-marked start against what the app predicted from the
+    // previous real cycle, so we can gently acknowledge an early/late start.
     periodTimingNote = null;
-    const prevStart = getMostRecentStart(date);
+    const prevStart = getPreviousStartBefore(date);
     if (prevStart && diffDays(date, prevStart) > 0) {
       const cycleLen = Number(state.cycleLength) || 28;
       const predicted = addDays(prevStart, cycleLen);
@@ -1312,7 +1364,6 @@ function togglePeriodStart(date) {
       // missed (huge gap) so we don't show a misleading "60 days late".
       if (Math.abs(delta) <= 14) periodTimingNote = { iso, delta };
     }
-    state.periodHistory.push(iso);
   }
   saveState();
   renderAll();
@@ -1378,6 +1429,31 @@ document.getElementById("nextMonth").addEventListener("click", () => {
   renderCalendar();
 });
 
+// Tap the month title to jump straight to any month/year via the native picker.
+function setupMonthPicker() {
+  const title = document.getElementById("calendarTitle");
+  const picker = document.getElementById("monthPicker");
+  if (!title || !picker) return;
+
+  title.addEventListener("click", () => {
+    picker.value = `${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}`;
+    if (typeof picker.showPicker === "function") {
+      try { picker.showPicker(); return; } catch (e) { /* fall through */ }
+    }
+    picker.focus();
+    picker.click();
+  });
+
+  picker.addEventListener("change", () => {
+    const [y, m] = picker.value.split("-").map(Number);
+    if (y && m) {
+      calendarYear = y;
+      calendarMonth = m - 1;
+      renderCalendar();
+    }
+  });
+}
+
 // ---------- Settings tab ----------
 function renderSettings() {
   const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
@@ -1424,6 +1500,7 @@ document.getElementById("saveSettings").addEventListener("click", () => {
 
   if (dateVal && !state.periodHistory.includes(dateVal)) {
     state.periodHistory.push(dateVal);
+    pruneNearbyStarts(dateVal);
   }
   state.cycleLength = cycleLength;
   state.periodLength = periodLength;
@@ -1773,6 +1850,8 @@ function setupCollapsibleMoodCard() {
 
 setupMoodButtons();
 setupCollapsibleMoodCard();
+setupMonthPicker();
+if (normalizePeriodHistory()) saveState(); // clean up any legacy same-period dupes
 applyLangToggleButton();
 applyUIStrings();
 renderAll();
