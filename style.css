@@ -479,7 +479,7 @@ textarea {
   margin-bottom: 8px;
 }
 
-.calendar-nav button {
+.calendar-nav button:not(.calendar-title-btn) {
   background: var(--accent-light);
   border: none;
   border-radius: 8px;
@@ -506,7 +506,11 @@ textarea {
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease;
 }
 
 .calendar-title-btn::after {
@@ -516,12 +520,19 @@ textarea {
   transition: transform 0.2s ease;
 }
 
+.calendar-title-btn.open {
+  background: var(--accent-lighter);
+}
+
 .calendar-title-btn.open::after {
   transform: rotate(180deg);
 }
 
-.calendar-title-btn:hover {
-  background: var(--accent-lighter);
+/* Only show the hover tint on devices that actually hover (not sticky on touch). */
+@media (hover: hover) {
+  .calendar-title-btn:hover {
+    background: var(--accent-lighter);
+  }
 }
 
 /* ── Themed month/year picker popover ── */
