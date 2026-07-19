@@ -322,14 +322,24 @@ main {
   margin: 4px 0 8px;
 }
 
-.mood-buttons {
+.mood-buttons,
+.symptom-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-top: 8px;
 }
 
-.mood-btn {
+.flow-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mood-btn,
+.symptom-btn,
+.flow-btn {
   border: 1px solid var(--border-input);
   background: #fff;
   border-radius: 12px;
@@ -338,10 +348,21 @@ main {
   cursor: pointer;
 }
 
-.mood-btn.selected {
+.flow-btn {
+  padding: 10px 4px;
+  font-size: 13px;
+}
+
+.mood-btn.selected,
+.symptom-btn.selected,
+.flow-btn.selected {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+.symptom-subhint {
+  margin-top: 14px;
 }
 
 .upcoming-list {
@@ -470,6 +491,12 @@ textarea {
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
+}
+
+.mood-history-detail {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
 }
 
 .calendar-nav {

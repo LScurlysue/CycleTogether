@@ -441,6 +441,30 @@ const MOOD_LABELS = {
   },
 };
 
+const FLOW_TYPES = ["light", "medium", "heavy"];
+const SYMPTOM_TYPES = [
+  "cramps", "headache", "bloating", "tender",
+  "backache", "nausea", "acne", "fatigue", "cravings", "spotting",
+];
+
+const FLOW_LABELS = {
+  en: { light: "💧 Light", medium: "💧💧 Medium", heavy: "💧💧💧 Heavy" },
+  uk: { light: "💧 Легкі", medium: "💧💧 Помірні", heavy: "💧💧💧 Рясні" },
+};
+
+const SYMPTOM_LABELS = {
+  en: {
+    cramps: "🌀 Cramps", headache: "🤕 Headache", bloating: "🎈 Bloating",
+    tender: "💗 Tender breasts", backache: "🪫 Backache", nausea: "🤢 Nausea",
+    acne: "🌋 Acne", fatigue: "🥱 Fatigue", cravings: "🍫 Cravings", spotting: "🩸 Spotting",
+  },
+  uk: {
+    cramps: "🌀 Спазми", headache: "🤕 Головний біль", bloating: "🎈 Здуття",
+    tender: "💗 Чутливість грудей", backache: "🪫 Біль у спині", nausea: "🤢 Нудота",
+    acne: "🌋 Висип", fatigue: "🥱 Втома", cravings: "🍫 Тяга до їжі", spotting: "🩸 Мазання",
+  },
+};
+
 // Returns the active-language phase note (icon/colorClass shared, label/text/tags/support translated).
 function getPhaseNote(phaseKey) {
   const note = state.phaseNotes[phaseKey];
@@ -471,6 +495,11 @@ const UI_STRINGS = {
     moodAnxious: "😰 Anxious",
     moodConfident: "💪 Confident",
     loggedForToday: "Logged for today ✓",
+    symptomsFlow: "Symptoms & flow",
+    flowHint: "If your period's here, how heavy is it today?",
+    symptomHint: "Any physical symptoms today? Pick as many as fit.",
+    flowLabel: "Flow",
+    symptomsLabel: "Symptoms",
     periodTimingEarlier: (n) => `Looks like your period came ${n} ${n === 1 ? "day" : "days"} earlier than expected 🌸 That's completely normal — your predictions are updated.`,
     periodTimingLater: (n) => `Looks like your period came ${n} ${n === 1 ? "day" : "days"} later than expected 🌸 Nothing to worry about — your predictions are updated.`,
     periodTimingOnTime: "Right on schedule 🌸 Your predictions are updated.",
@@ -484,9 +513,9 @@ const UI_STRINGS = {
     theme: "Theme",
     markAsPeriodStart: "Mark as period start",
     unmarkAsPeriodStart: "Unmark as period start",
-    moodHistory: "Mood history",
-    moodHistoryHint: "Your logged moods, most recent first, with the cycle phase for that day.",
-    noMoodsLoggedYet: "No moods logged yet. Log how you're feeling on the Today tab.",
+    moodHistory: "Your daily log",
+    moodHistoryHint: "Your logged moods, flow, and symptoms, most recent first, with the cycle phase for that day.",
+    noMoodsLoggedYet: "Nothing logged yet. Log your mood, flow, or symptoms on the Today tab.",
     cycleInfo: "Cycle info",
     lastPeriodStartLabel: "Start date of last period",
     avgCycleLengthLabel: "Average cycle length (days)",
@@ -591,6 +620,11 @@ const UI_STRINGS = {
     moodAnxious: "😰 Тривожно",
     moodConfident: "💪 Впевнено",
     loggedForToday: "Записано на сьогодні ✓",
+    symptomsFlow: "Симптоми та виділення",
+    flowHint: "Якщо почалися місячні, наскільки рясні сьогодні?",
+    symptomHint: "Які фізичні відчуття сьогодні? Обери стільки, скільки підходить.",
+    flowLabel: "Виділення",
+    symptomsLabel: "Симптоми",
     periodTimingEarlier: (n) => `Схоже, місячні почалися на ${n} дн. раніше, ніж очікувалося 🌸 Це цілком нормально — прогнози оновлено.`,
     periodTimingLater: (n) => `Схоже, місячні почалися на ${n} дн. пізніше, ніж очікувалося 🌸 Немає причин хвилюватися — прогнози оновлено.`,
     periodTimingOnTime: "Точно за графіком 🌸 Прогнози оновлено.",
@@ -604,9 +638,9 @@ const UI_STRINGS = {
     theme: "Тема",
     markAsPeriodStart: "Позначити як початок місячних",
     unmarkAsPeriodStart: "Скасувати позначку початку місячних",
-    moodHistory: "Історія настрою",
-    moodHistoryHint: "Твої записані настрої, від найновіших, з фазою циклу для кожного дня.",
-    noMoodsLoggedYet: "Настрій ще не записано. Запиши, як почуваєшся, на вкладці Сьогодні.",
+    moodHistory: "Твій щоденник",
+    moodHistoryHint: "Твої записані настрої, виділення та симптоми, від найновіших, з фазою циклу для кожного дня.",
+    noMoodsLoggedYet: "Ще нічого не записано. Запиши настрій, виділення чи симптоми на вкладці Сьогодні.",
     cycleInfo: "Інформація про цикл",
     lastPeriodStartLabel: "Дата початку останніх місячних",
     avgCycleLengthLabel: "Середня довжина циклу (днів)",
@@ -718,8 +752,11 @@ function defaultState() {
     periodLength: 5,
     phaseNotes: JSON.parse(JSON.stringify(DEFAULT_PHASE_NOTES)),
     moodLog: {},
+    flowLog: {},      // ISO date → "light" | "medium" | "heavy"
+    symptomLog: {},   // ISO date → array of symptom keys
     partnerMode: false,
     moodCardCollapsed: false,
+    symptomCardCollapsed: false,
     isPartnerDevice: false,
     partnerPremium: false,
     lastPartnerAlertDate: null,
@@ -1051,6 +1088,7 @@ function renderToday() {
   document.getElementById("insightAdvice").textContent = insight.daily_advice;
 
   renderMoodButtons(today);
+  renderSymptomButtons(today);
   renderUpcoming(today, info);
 }
 
@@ -1108,23 +1146,31 @@ function renderHistory() {
   const list = document.getElementById("moodHistoryList");
   list.innerHTML = "";
 
-  const entries = Object.entries(state.moodLog).sort((a, b) => (a[0] < b[0] ? 1 : -1));
-
   const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
   const dateLocale = LANG === "uk" ? "uk-UA" : undefined;
 
-  if (!entries.length) {
+  // Union of every date that has a mood, flow, or symptom logged.
+  const dates = new Set([
+    ...Object.keys(state.moodLog || {}),
+    ...Object.keys(state.flowLog || {}),
+    ...Object.keys(state.symptomLog || {}),
+  ]);
+  const sorted = [...dates].sort((a, b) => (a < b ? 1 : -1));
+
+  if (!sorted.length) {
     const li = document.createElement("li");
     li.textContent = dict.noMoodsLoggedYet;
     list.appendChild(li);
     return;
   }
 
-  entries.forEach(([iso, value]) => {
+  sorted.forEach((iso) => {
     const date = parseISO(iso);
     const info = getCycleInfo(date);
     const phase = info ? getPhaseNote(info.phaseKey) : null;
-    const moods = getLoggedMoods(value);
+    const moods = getLoggedMoods(state.moodLog[iso]);
+    const flow = (state.flowLog || {})[iso];
+    const symptoms = (state.symptomLog || {})[iso] || [];
 
     const li = document.createElement("li");
 
@@ -1144,6 +1190,20 @@ function renderHistory() {
       phaseSpan.className = "mood-history-phase";
       phaseSpan.textContent = `${phase.icon} ${phase.label} · ${dict.cycleDayTemplate(info.cycleDay, info.cycleLength)}`;
       li.appendChild(phaseSpan);
+    }
+
+    if (flow) {
+      const flowSpan = document.createElement("div");
+      flowSpan.className = "mood-history-detail";
+      flowSpan.textContent = `${dict.flowLabel}: ${L(FLOW_LABELS)[flow] || flow}`;
+      li.appendChild(flowSpan);
+    }
+
+    if (symptoms.length) {
+      const sympSpan = document.createElement("div");
+      sympSpan.className = "mood-history-detail";
+      sympSpan.textContent = `${dict.symptomsLabel}: ${symptoms.map((s) => L(SYMPTOM_LABELS)[s] || s).join(", ")}`;
+      li.appendChild(sympSpan);
     }
 
     list.appendChild(li);
@@ -1179,6 +1239,70 @@ function setupMoodButtons() {
       saveState();
       renderMoodButtons(toDateOnly(new Date()));
     });
+  });
+}
+
+// ---------- Symptom & flow logging ----------
+function setupSymptomButtons() {
+  const flowWrap = document.getElementById("flowButtons");
+  const sympWrap = document.getElementById("symptomButtons");
+  if (!flowWrap || !sympWrap) return;
+
+  FLOW_TYPES.forEach((flow) => {
+    const btn = document.createElement("button");
+    btn.className = "flow-btn";
+    btn.dataset.flow = flow;
+    btn.addEventListener("click", () => toggleFlow(flow));
+    flowWrap.appendChild(btn);
+  });
+
+  SYMPTOM_TYPES.forEach((symptom) => {
+    const btn = document.createElement("button");
+    btn.className = "symptom-btn";
+    btn.dataset.symptom = symptom;
+    btn.addEventListener("click", () => toggleSymptom(symptom));
+    sympWrap.appendChild(btn);
+  });
+}
+
+// Flow is single-select per day: tapping the active one again clears it.
+function toggleFlow(flow) {
+  const today = formatISO(toDateOnly(new Date()));
+  if (!state.flowLog) state.flowLog = {};
+  if (state.flowLog[today] === flow) delete state.flowLog[today];
+  else state.flowLog[today] = flow;
+  saveState();
+  renderSymptomButtons(toDateOnly(new Date()));
+}
+
+// Symptoms are multi-select per day, like moods.
+function toggleSymptom(symptom) {
+  const today = formatISO(toDateOnly(new Date()));
+  if (!state.symptomLog) state.symptomLog = {};
+  const logged = state.symptomLog[today] ? [...state.symptomLog[today]] : [];
+  const idx = logged.indexOf(symptom);
+  if (idx >= 0) logged.splice(idx, 1);
+  else logged.push(symptom);
+  if (logged.length) state.symptomLog[today] = logged;
+  else delete state.symptomLog[today];
+  saveState();
+  renderSymptomButtons(toDateOnly(new Date()));
+}
+
+// Updates button labels (for language switches) and selected state.
+function renderSymptomButtons(today) {
+  const key = formatISO(today);
+  const flow = (state.flowLog || {})[key];
+  const symptoms = (state.symptomLog || {})[key] || [];
+  const flowLabels = L(FLOW_LABELS);
+  const sympLabels = L(SYMPTOM_LABELS);
+  document.querySelectorAll(".flow-btn").forEach((btn) => {
+    btn.textContent = flowLabels[btn.dataset.flow];
+    btn.classList.toggle("selected", flow === btn.dataset.flow);
+  });
+  document.querySelectorAll(".symptom-btn").forEach((btn) => {
+    btn.textContent = sympLabels[btn.dataset.symptom];
+    btn.classList.toggle("selected", symptoms.includes(btn.dataset.symptom));
   });
 }
 
@@ -1860,10 +1984,10 @@ function renderAll() {
   applyPartnerMode();
 }
 
-// Collapsible "How are you feeling?" card — remembers open/closed between visits.
-function setupCollapsibleMoodCard() {
-  const card = document.getElementById("moodCard");
-  const toggle = document.getElementById("moodCardToggle");
+// Collapsible card (e.g. mood, symptoms) — remembers open/closed between visits.
+function setupCollapsibleCard(cardId, toggleId, stateKey) {
+  const card = document.getElementById(cardId);
+  const toggle = document.getElementById(toggleId);
   if (!card || !toggle) return;
 
   const apply = (collapsed) => {
@@ -1871,18 +1995,20 @@ function setupCollapsibleMoodCard() {
     toggle.setAttribute("aria-expanded", String(!collapsed));
   };
 
-  apply(!!state.moodCardCollapsed);
+  apply(!!state[stateKey]);
 
   toggle.addEventListener("click", () => {
     const collapsed = !card.classList.contains("collapsed");
     apply(collapsed);
-    state.moodCardCollapsed = collapsed;
+    state[stateKey] = collapsed;
     saveState();
   });
 }
 
 setupMoodButtons();
-setupCollapsibleMoodCard();
+setupSymptomButtons();
+setupCollapsibleCard("moodCard", "moodCardToggle", "moodCardCollapsed");
+setupCollapsibleCard("symptomCard", "symptomCardToggle", "symptomCardCollapsed");
 setupMonthPicker();
 if (normalizePeriodHistory()) saveState(); // clean up any legacy same-period dupes
 applyLangToggleButton();

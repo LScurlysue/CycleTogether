@@ -78,6 +78,19 @@
             </div>
           </div>
 
+          <div class="card owner-only collapsible-card" id="symptomCard">
+            <button type="button" class="collapsible-header" id="symptomCardToggle" aria-expanded="true" aria-controls="symptomCardBody">
+              <h2 data-i18n="symptomsFlow">Symptoms &amp; flow</h2>
+              <span class="collapse-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div class="collapsible-body" id="symptomCardBody">
+              <p class="hint" data-i18n="flowHint">If your period's here, how heavy is it today?</p>
+              <div class="flow-buttons" id="flowButtons"></div>
+              <p class="hint symptom-subhint" data-i18n="symptomHint">Any physical symptoms today? Pick as many as fit.</p>
+              <div class="symptom-buttons" id="symptomButtons"></div>
+            </div>
+          </div>
+
           <div class="card owner-only">
             <h2 data-i18n="comingUp">Coming up</h2>
             <ul id="upcomingList" class="upcoming-list"></ul>
