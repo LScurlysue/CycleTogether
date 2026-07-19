@@ -1429,28 +1429,61 @@ document.getElementById("nextMonth").addEventListener("click", () => {
   renderCalendar();
 });
 
-// Tap the month title to jump straight to any month/year via the native picker.
+// Tap the month title to open a themed month/year picker and jump anywhere.
+let mpViewYear = null; // year currently shown inside the open picker
+
 function setupMonthPicker() {
   const title = document.getElementById("calendarTitle");
   const picker = document.getElementById("monthPicker");
-  if (!title || !picker) return;
+  const grid = document.getElementById("mpGrid");
+  const yearLabel = document.getElementById("mpYear");
+  if (!title || !picker || !grid) return;
 
-  title.addEventListener("click", () => {
-    picker.value = `${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}`;
-    if (typeof picker.showPicker === "function") {
-      try { picker.showPicker(); return; } catch (e) { /* fall through */ }
-    }
-    picker.focus();
-    picker.click();
+  const isOpen = () => !picker.classList.contains("hidden");
+
+  const renderGrid = () => {
+    yearLabel.textContent = mpViewYear;
+    const short = L(MONTH_NAMES).map((m) => m.slice(0, 3));
+    grid.innerHTML = "";
+    short.forEach((label, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mp-month";
+      btn.textContent = label;
+      if (mpViewYear === calendarYear && i === calendarMonth) btn.classList.add("selected");
+      btn.addEventListener("click", () => {
+        calendarYear = mpViewYear;
+        calendarMonth = i;
+        closePicker();
+        renderCalendar();
+      });
+      grid.appendChild(btn);
+    });
+  };
+
+  const openPicker = () => {
+    mpViewYear = calendarYear;
+    renderGrid();
+    picker.classList.remove("hidden");
+    title.classList.add("open");
+  };
+
+  const closePicker = () => {
+    picker.classList.add("hidden");
+    title.classList.remove("open");
+  };
+
+  title.addEventListener("click", () => (isOpen() ? closePicker() : openPicker()));
+
+  document.getElementById("mpPrevYear").addEventListener("click", () => { mpViewYear--; renderGrid(); });
+  document.getElementById("mpNextYear").addEventListener("click", () => { mpViewYear++; renderGrid(); });
+
+  // Close when tapping outside the picker or the title, or pressing Escape.
+  document.addEventListener("click", (e) => {
+    if (isOpen() && !picker.contains(e.target) && e.target !== title) closePicker();
   });
-
-  picker.addEventListener("change", () => {
-    const [y, m] = picker.value.split("-").map(Number);
-    if (y && m) {
-      calendarYear = y;
-      calendarMonth = m - 1;
-      renderCalendar();
-    }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen()) closePicker();
   });
 }
 

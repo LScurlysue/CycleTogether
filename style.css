@@ -513,21 +513,97 @@ textarea {
   content: "▾";
   font-size: 12px;
   color: var(--accent);
+  transition: transform 0.2s ease;
+}
+
+.calendar-title-btn.open::after {
+  transform: rotate(180deg);
 }
 
 .calendar-title-btn:hover {
   background: var(--accent-lighter);
 }
 
-/* Visually hidden but focusable, so the native month picker can anchor to it. */
-.month-picker-input {
+/* ── Themed month/year picker popover ── */
+.calendar-card {
+  position: relative;
+}
+
+.month-picker {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  border: 0;
-  opacity: 0;
-  pointer-events: none;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(300px, 88%);
+  background: #fff;
+  border: 1px solid var(--border-light2);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px var(--shadow);
+  padding: 14px;
+  animation: mp-pop 0.16s ease;
+}
+
+@keyframes mp-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.month-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mp-year {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.mp-year-nav {
+  background: var(--accent-light);
+  border: none;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.mp-year-nav:hover {
+  background: var(--accent-light2, var(--border-light2));
+}
+
+.month-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mp-month {
+  border: 1px solid var(--border-input);
+  background: #fff;
+  border-radius: 10px;
+  padding: 9px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mp-month:hover {
+  background: var(--accent-lighter);
+  border-color: var(--accent-light);
+}
+
+.mp-month.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 .calendar-grid {

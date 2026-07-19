@@ -1,5 +1,5 @@
 // sw.js — PeakPhase Service Worker
-const CACHE_NAME = 'peakphase-v6';
+const CACHE_NAME = 'peakphase-v7';
 const ASSETS = [
   './',
   './index.html',

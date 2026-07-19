@@ -82,13 +82,20 @@
 
       <!-- CALENDAR TAB -->
       <section id="tab-calendar" class="tab-panel">
-        <div class="card">
+        <div class="card calendar-card">
           <div class="calendar-nav">
             <button id="prevMonth" aria-label="Previous month">‹</button>
             <button id="calendarTitle" class="calendar-title-btn" type="button" title="Tap to jump to a month">Month</button>
             <button id="nextMonth" aria-label="Next month">›</button>
           </div>
-          <input type="month" id="monthPicker" class="month-picker-input" aria-label="Jump to month" />
+          <div id="monthPicker" class="month-picker hidden" role="dialog" aria-label="Jump to month">
+            <div class="month-picker-head">
+              <button type="button" id="mpPrevYear" class="mp-year-nav" aria-label="Previous year">‹</button>
+              <span id="mpYear" class="mp-year">2026</span>
+              <button type="button" id="mpNextYear" class="mp-year-nav" aria-label="Next year">›</button>
+            </div>
+            <div class="month-picker-grid" id="mpGrid"></div>
+          </div>
           <div class="calendar-grid" id="calendarGrid"></div>
           <div class="legend">
             <span><i class="dot menstrual"></i> <span data-i18n="legendMenstrual">Menstrual</span></span>
