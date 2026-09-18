@@ -166,11 +166,21 @@
 
       <!-- HISTORY TAB -->
       <section id="tab-history" class="tab-panel">
-        <div class="card">
-          <h2 data-i18n="moodHistory">Mood history</h2>
-          <p class="hint" data-i18n="moodHistoryHint">Your logged moods, most recent first, with the cycle phase for that day.</p>
-          <ul id="moodHistoryList" class="mood-history-list"></ul>
+
+        <!-- Pattern summary -->
+        <div class="card" id="historyPatternsCard">
+          <h2 data-i18n="historyPatterns">Your patterns</h2>
+          <p class="hint" data-i18n="historyPatternsHint">How you tend to feel in each phase, based on your logs.</p>
+          <div id="historyPatternsBody"></div>
         </div>
+
+        <!-- Daily log -->
+        <div class="card">
+          <h2 data-i18n="moodHistory">Your daily log</h2>
+          <p class="hint" data-i18n="moodHistoryHint">Moods, flow and symptoms — newest first, grouped by month.</p>
+          <div id="moodHistoryList"></div>
+        </div>
+
       </section>
 
       <!-- SETTINGS TAB -->

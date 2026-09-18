@@ -465,27 +465,59 @@ textarea {
   font-size: 13px;
 }
 
-.mood-history-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* ── History: month group ── */
+.history-month-group { margin-bottom: 4px; }
+
+.history-month-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 0 4px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 2px;
 }
 
-.mood-history-list li {
-  padding: 10px 0;
+/* ── History: daily entry row ── */
+.mood-history-list { margin: 0; padding: 0; }
+
+.mood-history-entry {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  padding: 9px 0;
   border-bottom: 1px solid var(--border-light);
 }
 
-.mood-history-list li:last-child {
-  border-bottom: none;
+.mood-history-entry:last-child { border-bottom: none; }
+
+/* Coloured phase strip on the left */
+.mood-history-strip {
+  width: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
+.mood-history-strip.menstrual { background: #f7b8c4; }
+.mood-history-strip.follicular { background: #c9e8c5; }
+.mood-history-strip.ovulation  { background: #ffe08a; }
+.mood-history-strip.luteal     { background: #d8c9f0; }
+.mood-history-strip.pms        { background: #ffc98a; }
+.mood-history-strip.unknown    { background: var(--border-light); }
+
+.mood-history-body { flex: 1; min-width: 0; }
 
 .mood-history-top {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
   font-size: 14px;
   font-weight: 600;
 }
+
+.mood-history-date { flex-shrink: 0; }
+.mood-history-moods { color: var(--text); font-weight: 400; font-size: 13px; text-align: right; }
 
 .mood-history-phase {
   font-size: 12px;
@@ -496,7 +528,47 @@ textarea {
 .mood-history-detail {
   font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 3px;
+}
+
+/* ── History: pattern summary ── */
+.history-pattern-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.history-pattern-row:last-child { border-bottom: none; }
+
+.history-pattern-phase {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 0 0 36%;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.history-pattern-strip {
+  width: 4px;
+  height: 32px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.history-pattern-moods {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.history-no-data {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
 }
 
 .calendar-nav {

@@ -514,7 +514,10 @@ const UI_STRINGS = {
     markAsPeriodStart: "Mark as period start",
     unmarkAsPeriodStart: "Unmark as period start",
     moodHistory: "Your daily log",
-    moodHistoryHint: "Your logged moods, flow, and symptoms, most recent first, with the cycle phase for that day.",
+    moodHistoryHint: "Moods, flow and symptoms — newest first, grouped by month.",
+    historyPatterns: "Your patterns",
+    historyPatternsHint: "How you tend to feel in each phase, based on your logs.",
+    historyPatternsNone: "Log a few more days to see your patterns here.",
     noMoodsLoggedYet: "Nothing logged yet. Log your mood, flow, or symptoms on the Today tab.",
     cycleInfo: "Cycle info",
     lastPeriodStartLabel: "Start date of last period",
@@ -640,7 +643,10 @@ const UI_STRINGS = {
     markAsPeriodStart: "Позначити як початок місячних",
     unmarkAsPeriodStart: "Скасувати позначку початку місячних",
     moodHistory: "Твій щоденник",
-    moodHistoryHint: "Твої записані настрої, виділення та симптоми, від найновіших, з фазою циклу для кожного дня.",
+    moodHistoryHint: "Настрої, виділення та симптоми — від нових до старих, згруповані по місяцях.",
+    historyPatterns: "Твої паттерни",
+    historyPatternsHint: "Як ти зазвичай себе почуваєш у кожній фазі, за твоїми записами.",
+    historyPatternsNone: "Записуй ще кілька днів, щоб тут з'явились твої паттерни.",
     noMoodsLoggedYet: "Ще нічого не записано. Запиши настрій, виділення чи симптоми на вкладці Сьогодні.",
     cycleInfo: "Інформація про цикл",
     lastPeriodStartLabel: "Дата початку останніх місячних",
@@ -1173,71 +1179,192 @@ function renderUpcoming(today, info) {
 }
 
 // ---------- History tab ----------
-function renderHistory() {
-  const list = document.getElementById("moodHistoryList");
-  list.innerHTML = "";
 
+// Maps phaseKey → CSS class name for the coloured strip
+function phaseStripClass(phaseKey) {
+  if (!phaseKey) return "unknown";
+  if (phaseKey.startsWith("menstrual")) return "menstrual";
+  if (phaseKey.startsWith("follicular")) return "follicular";
+  if (phaseKey === "ovulation") return "ovulation";
+  if (phaseKey === "pms") return "pms";
+  return "luteal"; // lutealEarly, lutealLate
+}
+
+function renderHistory() {
   const dict = UI_STRINGS[LANG] || UI_STRINGS.en;
   const dateLocale = LANG === "uk" ? "uk-UA" : undefined;
 
-  // Union of every date that has a mood, flow, or symptom logged.
+  // ── Collect all logged dates ──────────────────────────────────────────────
   const dates = new Set([
     ...Object.keys(state.moodLog || {}),
     ...Object.keys(state.flowLog || {}),
     ...Object.keys(state.symptomLog || {}),
   ]);
-  const sorted = [...dates].sort((a, b) => (a < b ? 1 : -1));
+  const sorted = [...dates].sort((a, b) => (a < b ? 1 : -1)); // newest first
+
+  // ── 1. Pattern summary ───────────────────────────────────────────────────
+  const patternsEl = document.getElementById("historyPatternsBody");
+  patternsEl.innerHTML = "";
+
+  // Group mood counts by phase group
+  const PHASE_GROUPS = [
+    { key: "menstrual",  label: null, strip: "menstrual",  keys: ["menstrualEarly","menstrualLate"] },
+    { key: "follicular", label: null, strip: "follicular", keys: ["follicularEarly","follicularLate"] },
+    { key: "ovulation",  label: null, strip: "ovulation",  keys: ["ovulation"] },
+    { key: "luteal",     label: null, strip: "luteal",     keys: ["lutealEarly","lutealLate"] },
+    { key: "pms",        label: null, strip: "pms",        keys: ["pms"] },
+  ];
+
+  // Fill in localised phase labels
+  PHASE_GROUPS.forEach((g) => {
+    const sampleKey = g.keys[0];
+    const note = getPhaseNote(sampleKey);
+    g.label = `${note.icon} ${note.label}`;
+  });
+
+  // Count moods per phase group
+  const moodsByPhase = {};
+  PHASE_GROUPS.forEach((g) => { moodsByPhase[g.key] = {}; });
+
+  sorted.forEach((iso) => {
+    const info = getCycleInfo(parseISO(iso));
+    if (!info) return;
+    const groupKey = phaseStripClass(info.phaseKey);
+    if (!moodsByPhase[groupKey]) return;
+    const moods = getLoggedMoods(state.moodLog[iso]);
+    moods.forEach((m) => {
+      moodsByPhase[groupKey][m] = (moodsByPhase[groupKey][m] || 0) + 1;
+    });
+  });
+
+  const hasPatterns = PHASE_GROUPS.some((g) =>
+    Object.keys(moodsByPhase[g.key] || {}).length > 0
+  );
+
+  if (!hasPatterns) {
+    const p = document.createElement("p");
+    p.className = "history-no-data";
+    p.textContent = dict.historyPatternsNone;
+    patternsEl.appendChild(p);
+  } else {
+    PHASE_GROUPS.forEach((g) => {
+      const counts = moodsByPhase[g.key] || {};
+      const top = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      if (!top.length) return;
+
+      const row = document.createElement("div");
+      row.className = "history-pattern-row";
+
+      const strip = document.createElement("div");
+      strip.className = `history-pattern-strip ${g.strip}`;
+
+      const phaseDiv = document.createElement("div");
+      phaseDiv.className = "history-pattern-phase";
+      phaseDiv.textContent = g.label;
+
+      const moodsDiv = document.createElement("div");
+      moodsDiv.className = "history-pattern-moods";
+      moodsDiv.textContent = top
+        .map(([mood, count]) => `${L(MOOD_LABELS)[mood] || mood} ×${count}`)
+        .join("  ·  ");
+
+      row.appendChild(strip);
+      row.appendChild(phaseDiv);
+      row.appendChild(moodsDiv);
+      patternsEl.appendChild(row);
+    });
+  }
+
+  // ── 2. Daily log grouped by month ────────────────────────────────────────
+  const listEl = document.getElementById("moodHistoryList");
+  listEl.innerHTML = "";
 
   if (!sorted.length) {
-    const li = document.createElement("li");
-    li.textContent = dict.noMoodsLoggedYet;
-    list.appendChild(li);
+    const p = document.createElement("p");
+    p.className = "history-no-data";
+    p.textContent = dict.noMoodsLoggedYet;
+    listEl.appendChild(p);
     return;
   }
 
+  let currentMonthKey = null;
+  let currentGroup = null;
+
   sorted.forEach((iso) => {
     const date = parseISO(iso);
+    const monthKey = iso.slice(0, 7); // "YYYY-MM"
     const info = getCycleInfo(date);
     const phase = info ? getPhaseNote(info.phaseKey) : null;
     const moods = getLoggedMoods(state.moodLog[iso]);
     const flow = (state.flowLog || {})[iso];
     const symptoms = (state.symptomLog || {})[iso] || [];
+    const stripClass = phaseStripClass(info?.phaseKey);
 
-    const li = document.createElement("li");
+    // New month → add a month header
+    if (monthKey !== currentMonthKey) {
+      currentMonthKey = monthKey;
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "history-month-group";
+
+      const label = document.createElement("div");
+      label.className = "history-month-label";
+      label.textContent = date.toLocaleDateString(dateLocale, { month: "long", year: "numeric" });
+      groupDiv.appendChild(label);
+
+      listEl.appendChild(groupDiv);
+      currentGroup = groupDiv;
+    }
+
+    // Entry row
+    const entry = document.createElement("div");
+    entry.className = "mood-history-entry";
+
+    // Coloured left strip
+    const strip = document.createElement("div");
+    strip.className = `mood-history-strip ${stripClass}`;
+    entry.appendChild(strip);
+
+    // Content
+    const body = document.createElement("div");
+    body.className = "mood-history-body";
 
     const top = document.createElement("div");
     top.className = "mood-history-top";
     const dateSpan = document.createElement("span");
     dateSpan.className = "mood-history-date";
-    dateSpan.textContent = date.toLocaleDateString(dateLocale, { weekday: "short", month: "short", day: "numeric" });
+    dateSpan.textContent = date.toLocaleDateString(dateLocale, { weekday: "short", day: "numeric" });
     const moodSpan = document.createElement("span");
-    moodSpan.textContent = moods.map((mood) => L(MOOD_LABELS)[mood] || mood).join(", ");
+    moodSpan.className = "mood-history-moods";
+    moodSpan.textContent = moods.map((m) => L(MOOD_LABELS)[m] || m).join(", ");
     top.appendChild(dateSpan);
     top.appendChild(moodSpan);
-    li.appendChild(top);
+    body.appendChild(top);
 
     if (phase) {
-      const phaseSpan = document.createElement("div");
-      phaseSpan.className = "mood-history-phase";
-      phaseSpan.textContent = `${phase.icon} ${phase.label} · ${dict.cycleDayTemplate(info.cycleDay, info.cycleLength)}`;
-      li.appendChild(phaseSpan);
+      const phaseDiv = document.createElement("div");
+      phaseDiv.className = "mood-history-phase";
+      phaseDiv.textContent = `${phase.icon} ${phase.label} · ${dict.cycleDayTemplate(info.cycleDay, info.cycleLength)}`;
+      body.appendChild(phaseDiv);
     }
 
     if (flow) {
-      const flowSpan = document.createElement("div");
-      flowSpan.className = "mood-history-detail";
-      flowSpan.textContent = `${dict.flowLabel}: ${L(FLOW_LABELS)[flow] || flow}`;
-      li.appendChild(flowSpan);
+      const flowDiv = document.createElement("div");
+      flowDiv.className = "mood-history-detail";
+      flowDiv.textContent = `${dict.flowLabel}: ${L(FLOW_LABELS)[flow] || flow}`;
+      body.appendChild(flowDiv);
     }
 
     if (symptoms.length) {
-      const sympSpan = document.createElement("div");
-      sympSpan.className = "mood-history-detail";
-      sympSpan.textContent = `${dict.symptomsLabel}: ${symptoms.map((s) => L(SYMPTOM_LABELS)[s] || s).join(", ")}`;
-      li.appendChild(sympSpan);
+      const sympDiv = document.createElement("div");
+      sympDiv.className = "mood-history-detail";
+      sympDiv.textContent = `${dict.symptomsLabel}: ${symptoms.map((s) => L(SYMPTOM_LABELS)[s] || s).join(", ")}`;
+      body.appendChild(sympDiv);
     }
 
-    list.appendChild(li);
+    entry.appendChild(body);
+    currentGroup.appendChild(entry);
   });
 }
 
