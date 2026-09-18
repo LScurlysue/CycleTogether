@@ -841,15 +841,45 @@ body:not(.partner-mode) .not-owner-only {
 }
 
 .collapse-chevron {
-  font-size: 22px;
-  line-height: 1;
-  color: var(--accent);
-  transition: transform 0.2s ease;
+  /* Hide the raw text character — we draw the icon with CSS */
+  font-size: 0;
+  color: transparent;
   flex-shrink: 0;
+
+  /* Circle button */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-light, #fce8ec);
+  transition: transform 0.25s ease, background 0.2s ease;
+  position: relative;
+}
+
+/* Chevron drawn as a pure-CSS arrow inside the circle */
+.collapse-chevron::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(45deg) translateY(-2px);
+  border-radius: 1px;
 }
 
 .collapsible-card.collapsed .collapse-chevron {
   transform: rotate(-90deg);
+}
+
+.collapsible-header:hover .collapse-chevron {
+  background: var(--accent);
+}
+
+.collapsible-header:hover .collapse-chevron::after {
+  border-color: #fff;
 }
 
 .collapsible-card .collapsible-body {
