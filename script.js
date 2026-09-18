@@ -562,6 +562,7 @@ const UI_STRINGS = {
     insightExpect: "What to expect",
     insightBe: "How to be with yourself",
     insightAdvice: "Today's tip",
+    insightFitness: "Fitness",
     insightExpectPartner: "What's going on",
     insightBePartner: "How to support her",
     insightAdvicePartner: "Quick tip",
@@ -687,6 +688,7 @@ const UI_STRINGS = {
     insightExpect: "Чого очікувати",
     insightBe: "Як бути з собою",
     insightAdvice: "Порада дня",
+    insightFitness: "Фітнес",
     insightExpectPartner: "Що відбувається",
     insightBePartner: "Як підтримати її",
     insightAdvicePartner: "Швидка порада",
@@ -978,6 +980,33 @@ function getPhaseText(info) {
   return variants[index];
 }
 
+// ---------- Phase-based fitness & nutrition tips ----------
+// One tip per major phase group (owner only). Source: Dr. Pill cycle-sync program.
+const FITNESS_TIPS = {
+  en: {
+    menstrual:   "Your energy is at its lowest this week — and that's completely normal. Don't push. The only exercise allowed is walking. Eat plenty of protein and rest. Pushing hard now spikes your stress hormones and signals your body to hold onto fat, so you'll see zero results.",
+    follicular:  "This is your body's best fat-burning window all month. Cut the carbs — no bread, rice, or pasta. Eat protein and vegetables only, and lift heavy. Your hormones are set up to help you drop fat fast right now. Use it.",
+    ovulation:   "Your metabolism is at its monthly peak. Add carbs back in and train your hardest — this is the week to push in the gym. Your body is built to perform at its best right now, so take full advantage.",
+    luteal:      "Start winding down your workouts and give your body space to slow. Cravings will hit hard this week — don't try to resist them. Instead, fill up on protein, nuts, and dark chocolate. Satisfy the cravings without derailing your progress.",
+  },
+  uk: {
+    menstrual:   "Цього тижня твоя енергія на найнижчому рівні — і це абсолютно нормально. Не переборщуй. Єдиний дозволений рух — це ходьба. Їж багато білка і відпочивай. Якщо тиснути на себе зараз — піднімуться гормони стресу, і тіло буде триматися за жир.",
+    follicular:  "Це найкращий тиждень для спалювання жиру за весь місяць. Відмовся від вуглеводів — ніхлібу, рису чи макаронів. Тільки білок і овочі, та силові тренування. Твої гормони налаштовані на жироспалювання — використай це.",
+    ovulation:   "Твій метаболізм на місячному піку. Повертай вуглеводи й тренуйся найінтенсивніше — цей тиждень для найважчих тренувань. Тіло зараз на піку своїх можливостей.",
+    luteal:      "Починай знижувати інтенсивність тренувань і давай тілу відпочивати. Тяга до солодкого та жирного буде сильною — не борися з нею. Натомість їж більше білка, горіхів і темного шоколаду.",
+  },
+};
+
+// Maps phaseKey → fitness tip group
+function getFitnessTip(phaseKey) {
+  const lang = LANG === "uk" ? "uk" : "en";
+  const tips  = FITNESS_TIPS[lang];
+  if (phaseKey === "menstrualEarly" || phaseKey === "menstrualLate") return tips.menstrual;
+  if (phaseKey === "follicularEarly" || phaseKey === "follicularLate") return tips.follicular;
+  if (phaseKey === "ovulation") return tips.ovulation;
+  return tips.luteal; // lutealEarly, lutealLate, pms
+}
+
 // ---------- Daily insights (28-day lookup, scaled to actual cycle length) ----------
 // Picks one of several variants per day, rotating by cycle number so the wording
 // doesn't repeat identically every month.
@@ -1038,6 +1067,7 @@ function applyInsightLabels() {
   document.querySelectorAll("[data-insight-tab='expect']").forEach((el) => (el.textContent = labels.expect));
   document.querySelectorAll("[data-insight-tab='be']").forEach((el) => (el.textContent = labels.be));
   document.querySelectorAll("[data-insight-tab='advice']").forEach((el) => (el.textContent = labels.advice));
+  document.querySelectorAll("[data-insight-tab='fitness']").forEach((el) => (el.textContent = dict.insightFitness));
 }
 
 document.querySelectorAll(".insight-tab-btn").forEach((btn) => {
@@ -1086,6 +1116,7 @@ function renderToday() {
   document.getElementById("insightExpect").textContent = insight.what_to_expect;
   document.getElementById("insightBe").textContent = insight.how_to_be;
   document.getElementById("insightAdvice").textContent = insight.daily_advice;
+  document.getElementById("insightFitness").textContent = getFitnessTip(info.phaseKey);
 
   renderMoodButtons(today);
   renderSymptomButtons(today);
@@ -1418,6 +1449,7 @@ function showDayDetail(date) {
   document.getElementById("dayDetailInsightExpect").textContent = insight.what_to_expect;
   document.getElementById("dayDetailInsightBe").textContent = insight.how_to_be;
   document.getElementById("dayDetailInsightAdvice").textContent = insight.daily_advice;
+  document.getElementById("dayDetailInsightFitness").textContent = getFitnessTip(info.phaseKey);
 
   const iso = formatISO(date);
   const isPeriodStart = state.periodHistory.includes(iso);
